@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<Configuration>
+	<Options>
+		<Output type="File" address="local/path/to/report.xlsx" password="true" />
+		<Output type="Email" address="admin@company.email" password="false" />
+	</Options>
+	<Work>
+		<Target host="10.0.0.1">
+			<Task type="McAfee"  port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
+		</Target>
+		<Target host="10.0.0.2">
+			<Task type="McAfee"  port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
+			<Task type="Acronis"  port="80" key="b00db39f948d13ea1e59b4d6fce56389"/>
+			<Task type="vCenter"  port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
+		</Target>
+		<Target host="10.0.0.3">
+			<Task type="Custom"  port="22" key=".ssh/id_rsa" script="local/path/to/script1.sh local/path/to/script2.sh local/path/to/script3.sh"/>
+			<Task type="Custom"  port="22" key=".ssh/id_rsa" script="local/path/to/script1.sh local/path/to/script2.sh local/path/to/script3.sh"/>
+		</Target>
+	</Work>
+</Configuration>
