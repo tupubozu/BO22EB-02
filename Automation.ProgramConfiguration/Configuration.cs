@@ -155,6 +155,8 @@
 
         private string keyField;
 
+        private string usernameField;
+
         private string[] scriptField;
 
         /// <remarks/>
@@ -196,6 +198,19 @@
             set
             {
                 this.keyField = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute("username")]
+        public string Username
+        {
+            get
+            {
+                return this.usernameField;
+            }
+            set
+            {
+                this.usernameField = value;
             }
         }
 

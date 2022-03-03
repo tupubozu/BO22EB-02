@@ -20,6 +20,7 @@ namespace HttpApiClient
 
         public ApiClient(Uri baseAddress, string apiKey)
         {
+            serializer = new JsonSerializer();
             client = new HttpClient();
             client.BaseAddress = baseAddress;
             ApiKey = apiKey;
