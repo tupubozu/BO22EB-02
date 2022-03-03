@@ -3,6 +3,7 @@
 	<Options>
 		<Output type="File" address="local/path/to/report.xlsx" password="true" />
 		<Output type="Email" address="admin@company.email" password="false" />
+		<Output type="Console" />
 	</Options>
 	<Work>
 		<Target host="10.0.0.1">

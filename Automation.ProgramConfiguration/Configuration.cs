@@ -58,8 +58,8 @@
         private bool passwordField;
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("type", typeof(ConfigurationOutputType))]
-        public ConfigurationOutputType type
+        [System.Xml.Serialization.XmlAttributeAttribute("type")]
+        public ConfigurationOutputType OutputType
         {
             get
             {
@@ -72,8 +72,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("address", typeof(string))]
-        public string address
+        [System.Xml.Serialization.XmlAttributeAttribute("address")]
+        public string Address
         {
             get
             {
@@ -86,8 +86,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("password", typeof(bool))]
-        public bool password
+        [System.Xml.Serialization.XmlAttributeAttribute("password")]
+        public bool PasswordFlag
         {
             get
             {
@@ -126,8 +126,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("host", typeof(string))]
-        public string host
+        [System.Xml.Serialization.XmlAttributeAttribute("host")]
+        public string Host
         {
             get
             {
@@ -158,8 +158,8 @@
         private string[] scriptField;
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("type", typeof(ConfigurationTargetTaskType))]
-        public ConfigurationTargetTaskType type
+        [System.Xml.Serialization.XmlAttributeAttribute("type")]
+        public ConfigurationTargetTaskType TaskType
         {
             get
             {
@@ -172,8 +172,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("port", typeof(ushort))]
-        public ushort port
+        [System.Xml.Serialization.XmlAttributeAttribute("port")]
+        public ushort Port
         {
             get
             {
@@ -186,8 +186,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("key", typeof(string))]
-        public string key
+        [System.Xml.Serialization.XmlAttributeAttribute("key")]
+        public string Key
         {
             get
             {
@@ -200,8 +200,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("script", typeof(string[]))]
-        public string[] script
+        [System.Xml.Serialization.XmlAttributeAttribute("script")]
+        public string[] Scripts
         {
             get
             {
