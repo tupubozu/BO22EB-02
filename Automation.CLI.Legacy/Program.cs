@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Automation.ProgramConfiguration;
 using Renci.SshNet;
-<<<<<<< HEAD
 using Serilog;
-=======
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
->>>>>>> dev-crypto
 
 namespace Automation.CLI.Legacy
 {
@@ -21,12 +18,8 @@ namespace Automation.CLI.Legacy
         static Configuration config;
         static void Main(string[] args)
         {
-<<<<<<< HEAD
             InitializeLog();
-            if (!ConfigurationTryParse(System.IO.File.OpenRead(args[0]), out config))
-            {
-                return;
-=======
+            
             if (args.Length == 0) return;
             string configArchivePath = args[0];
 
@@ -49,7 +42,6 @@ namespace Automation.CLI.Legacy
                     if (!ConfigurationTryParse(cryptoConfigStream, out config)) return;
                 }
                 
->>>>>>> dev-crypto
             }
             
 
