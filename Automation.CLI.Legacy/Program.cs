@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Automation.ProgramConfiguration;
 using Renci.SshNet;
+using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
 
 namespace Automation.CLI.Legacy
 {
@@ -14,10 +17,28 @@ namespace Automation.CLI.Legacy
         static Configuration config;
         static void Main(string[] args)
         {
-            var paths = args.Where((string path) => System.IO.File.Exists(path));
-            foreach (var path in paths)
+            if (args.Length == 0) return;
+            string configArchivePath = args[0];
+
+            using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
+            using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
+            using (var hash = SHA512.Create())
+            using (var aesCrypto = Aes.Create())
             {
-                ConfigurationTryParse(System.IO.File.OpenRead(path), out config);
+                aesCrypto.BlockSize = 512;
+                aesCrypto.KeySize = 512;
+                aesCrypto.Mode = CipherMode.CBC;
+                aesCrypto.Padding = PaddingMode.ISO10126;
+                aesCrypto.IV = hash.ComputeHash(new MemoryStream(Encoding.Unicode.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")));
+                aesCrypto.Key = hash.ComputeHash(new MemoryStream(Encoding.Unicode.GetBytes(Console.ReadLine())));
+
+                var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
+
+                using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
+                {
+                    if (!ConfigurationTryParse(cryptoConfigStream, out config)) return;
+                }
+                
             }
 
             var a = config.Work.Last();
