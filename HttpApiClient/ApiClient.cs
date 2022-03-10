@@ -26,7 +26,7 @@ namespace HttpApiClient
             ApiKey = apiKey;
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+            client.DefaultRequestHeaders.Add("Content-Type", "application/json"); // Migth be required to be moved into a HttpRequest object in each of the sub-classes' API calls (methods)
         }
 
         public void Dispose()

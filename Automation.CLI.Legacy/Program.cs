@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Automation.ProgramConfiguration;
 using Renci.SshNet;
+using Serilog;
 
 namespace Automation.CLI.Legacy
 {
@@ -14,11 +15,12 @@ namespace Automation.CLI.Legacy
         static Configuration config;
         static void Main(string[] args)
         {
-            var paths = args.Where((string path) => System.IO.File.Exists(path));
-            foreach (var path in paths)
+            InitializeLog();
+            if (!ConfigurationTryParse(System.IO.File.OpenRead(args[0]), out config))
             {
-                ConfigurationTryParse(System.IO.File.OpenRead(path), out config);
+                return;
             }
+            
 
             var a = config.Work.Last();
             var b = a.Task.First();
@@ -40,13 +42,28 @@ namespace Automation.CLI.Legacy
             catch (Exception ex)
             {
 #if DEBUG
-                Console.Out.WriteLine(ex.Message);
-                Console.Error.WriteLine(ex);
+                Log.Information(ex.Message);
+                Log.Debug("Error: {0}",ex);
 #endif
                 config = null;
                 return false;
             }
             
+        }
+        static void InitializeLog()
+        {
+            var logConfig = new LoggerConfiguration()
+#if DEBUG
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Verbose)
+#else
+				.WriteTo.Console(Serilog.Events.LogEventLevel.Information)
+				.WriteTo.Console(Serilog.Events.LogEventLevel.Warning)
+				.WriteTo.Console(Serilog.Events.LogEventLevel.Error)
+#endif
+                .Enrich.FromLogContext()
+                .MinimumLevel.Debug();
+
+            Log.Logger = logConfig.CreateLogger();
         }
     }
 }
