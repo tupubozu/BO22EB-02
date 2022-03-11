@@ -92,9 +92,9 @@
       <Project>{6ef1ba6f-72e5-4af2-afaf-5eb682053185}</Project>
       <Name>AcronisApiClient</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Automation.ProgramConfiguration\Automation.ProgramConfiguration.csproj">
+    <ProjectReference Include="..\Automation.ProgramConfiguration\Automation.Configuration.csproj">
       <Project>{f89eb9c9-5ecd-4cdf-a48e-09de520df4f0}</Project>
-      <Name>Automation.ProgramConfiguration</Name>
+      <Name>Automation.Configuration</Name>
     </ProjectReference>
     <ProjectReference Include="..\McAfeeEpoClient\McAfeeApiClient.csproj">
       <Project>{2c0adb17-c6db-45aa-8e66-592b41a14b13}</Project>

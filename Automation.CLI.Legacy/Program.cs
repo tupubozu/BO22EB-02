@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Automation.ProgramConfiguration;
+using Automation.Configuration;
 using Renci.SshNet;
 using Serilog;
 using System.IO;
@@ -15,60 +15,91 @@ namespace Automation.CLI.Legacy
 {
     internal static class Program
     {
-        static Configuration config;
+        static ProgramConfiguration config;
         static void Main(string[] args)
         {
             InitializeLog();
-            
-            if (args.Length == 0) return;
-            string configArchivePath = args[0];
+            Log.Information("Starting program");
 
-            using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
-            using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
-            using (var hash = SHA512.Create())
-            using (var aesCrypto = Aes.Create())
+            if (args.Length == 0)
             {
-                aesCrypto.BlockSize = 512;
-                aesCrypto.KeySize = 512;
-                aesCrypto.Mode = CipherMode.CBC;
-                aesCrypto.Padding = PaddingMode.ISO10126;
-                aesCrypto.IV = hash.ComputeHash(new MemoryStream(Encoding.Unicode.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")));
-                aesCrypto.Key = hash.ComputeHash(new MemoryStream(Encoding.Unicode.GetBytes(Console.ReadLine())));
-
-                var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
-
-                using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                {
-                    if (!ConfigurationTryParse(cryptoConfigStream, out config)) return;
-                }
-                
+                Log.Fatal("No arguments provided");
+                Log.Information("Exiting");
+#if DEBUG
+                Console.ReadKey(true);
+#endif
+                return;
             }
-            
+
+            Log.Information("Configuration argument: \"{0}\"", args[0]);
+            if (!File.Exists(args[0]))
+            {
+                Log.Fatal("No file exist at \"{0}\"", args[0]);
+                Log.Information("Exiting");
+                return;
+            }
+            string configArchivePath = Path.GetFullPath(args[0]);
+            Log.Information("Reading configuration from: \"{0}\"", configArchivePath);
+
+            try
+            {
+                using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
+                using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
+                using (var hash = SHA512.Create())
+                using (var aesCrypto = Aes.Create())
+                {
+                    aesCrypto.BlockSize = 512;
+                    aesCrypto.KeySize = 512;
+                    aesCrypto.Mode = CipherMode.CBC;
+                    aesCrypto.Padding = PaddingMode.ISO10126;
+                    aesCrypto.IV = hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")));
+                    aesCrypto.Key = hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(Console.ReadLine())));
+
+                    var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
+
+                    using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
+                    {
+                        if (!ConfigurationTryParse(cryptoConfigStream, out config, out Exception ex))
+                        {
+                            throw ex;
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Exception: {0}", ex);
+                Log.Error("Exception: {0}", ex.Message);
+                Log.Fatal("Error encountered while reading configuration: {0}: {1}", ex.GetType().FullName, ex.Message);
+                Log.Information("Exiting");
+                return;
+            }
+
+            Console.WriteLine(config.Metadata.Greeting);
 
             var a = config.Work.Last();
-            var b = a.Task.First();
+            var b = a.Job.First();
 
-            var sshClient = new SshClient(host: a.Host, port: b.Port, username: b.Username, keyFiles: new PrivateKeyFile(b.Key) );
+            var sshClient = new SshClient(host: a.Host, port: b.Port, username: b.Username, keyFiles: new PrivateKeyFile(new MemoryStream(Encoding.Unicode.GetBytes(b.Key))));
             Console.WriteLine(sshClient.ConnectionInfo);
 #if DEBUG
             Console.ReadKey(true);
 #endif
         }
-        static bool ConfigurationTryParse(System.IO.Stream stream, out Automation.ProgramConfiguration.Configuration config)
+        static bool ConfigurationTryParse(Stream stream, out ProgramConfiguration config, out Exception ex)
         {
             try
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(Configuration));
-                config = serializer.Deserialize(stream) as Configuration;
+                XmlSerializer serializer = new XmlSerializer(typeof(ProgramConfiguration));
+                config = serializer.Deserialize(stream) as ProgramConfiguration;
+                ex = null;
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception error)
             {
-#if DEBUG
-                Log.Information(ex.Message);
-                Log.Debug("Error: {0}",ex);
-#endif
                 config = null;
+                ex = error;
                 return false;
             }
             
