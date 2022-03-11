@@ -269,20 +269,20 @@
     public partial class ProgramConfigurationMetadata
     {
 
-        private string greetingField;
+        private string descriptionField;
 
         private System.DateTime revisionField;
 
         /// <remarks/>
-        public string Greeting
+        public string Description
         {
             get
             {
-                return this.greetingField;
+                return this.descriptionField;
             }
             set
             {
-                this.greetingField = value;
+                this.descriptionField = value;
             }
         }
 

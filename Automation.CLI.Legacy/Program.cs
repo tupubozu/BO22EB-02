@@ -76,7 +76,7 @@ namespace Automation.CLI.Legacy
                 return;
             }
 
-            Console.WriteLine(config.Metadata.Greeting);
+            Console.WriteLine(config.Metadata.Description);
 
             var a = config.Work.Last();
             var b = a.Job.First();
