@@ -5,7 +5,7 @@
     [System.SerializableAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false,ElementName = "ProgramConfiguration")]
+    [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false, ElementName = "ProgramConfiguration")]
     public partial class ProgramConfiguration
     {
 
@@ -72,6 +72,28 @@
                 this.scriptsField = value;
             }
         }
+
+        public static bool TryParse(System.IO.Stream stream, out ProgramConfiguration config)
+        {
+            try
+            {
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
+                config = serializer.Deserialize(stream) as ProgramConfiguration;
+                return true;
+            }
+            catch (System.Exception)
+            {
+                config = null;
+                return false;
+            }
+        }
+
+        public static ProgramConfiguration Parse(System.IO.Stream stream)
+        {
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
+                return serializer.Deserialize(stream) as ProgramConfiguration;   
+        }
+
     }
 
     public enum ConfigurationOutputCategory { File, Email, Console }

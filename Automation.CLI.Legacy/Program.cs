@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Automation.Configuration;
+using Automation.Cryptography;
 using Renci.SshNet;
 using Serilog;
 using System.IO;
@@ -46,23 +47,15 @@ namespace Automation.CLI.Legacy
                 using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
                 using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
                 using (var hash = SHA512.Create())
-                using (var aesCrypto = Aes.Create())
+                using (var aesCrypto = Crypto.GetAes512(hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")))))
                 {
-                    aesCrypto.BlockSize = 512;
-                    aesCrypto.KeySize = 512;
-                    aesCrypto.Mode = CipherMode.CBC;
-                    aesCrypto.Padding = PaddingMode.ISO10126;
-                    aesCrypto.IV = hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")));
                     aesCrypto.Key = hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(Console.ReadLine())));
 
                     var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
 
                     using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
                     {
-                        if (!ConfigurationTryParse(cryptoConfigStream, out config, out Exception ex))
-                        {
-                            throw ex;
-                        }
+                        config = ProgramConfiguration.Parse(cryptoConfigStream);
                     }
 
                 }
@@ -87,23 +80,7 @@ namespace Automation.CLI.Legacy
             Console.ReadKey(true);
 #endif
         }
-        static bool ConfigurationTryParse(Stream stream, out ProgramConfiguration config, out Exception ex)
-        {
-            try
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(ProgramConfiguration));
-                config = serializer.Deserialize(stream) as ProgramConfiguration;
-                ex = null;
-                return true;
-            }
-            catch (Exception error)
-            {
-                config = null;
-                ex = error;
-                return false;
-            }
-            
-        }
+        
         static void InitializeLog()
         {
             var logConfig = new LoggerConfiguration()
