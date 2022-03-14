@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ProgramConfiguration>
 	<Metadata>
-		<Greeting>Hello World!</Greeting> <!-- Descrition of configuration for program start -->
+		<Description>Hello World!</Description> <!-- Descrition of configuration for program start -->
 		<Revision>2022-03-10T20:00:00.0000Z</Revision> <!-- Timestamp of file creation -->
 	</Metadata>
 	<Options>
