@@ -82,6 +82,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Automation.Cryptography\Automation.Cryptography.csproj">
+      <Project>{9167acb3-17e1-4601-95c1-0ae012b87fd4}</Project>
+      <Name>Automation.Cryptography</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Automation.ProgramConfiguration\Automation.Configuration.csproj">
       <Project>{f89eb9c9-5ecd-4cdf-a48e-09de520df4f0}</Project>
       <Name>Automation.Configuration</Name>

@@ -77,5 +77,10 @@ namespace Automation.ConfigMaker.GUI
         {
             var result = saveFileDialog1.ShowDialog();
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

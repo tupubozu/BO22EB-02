@@ -1,8 +1,13 @@
 <?xml version="1.0"?>
 <ProgramConfiguration>
 	<Metadata>
+		<Title>Sample Config</Title>
 		<Description>Hello World!</Description> <!-- Descrition of configuration for program start -->
 		<Revision>2022-03-10T20:00:00.0000Z</Revision> <!-- Timestamp of file creation -->
+		<Author>
+			<Name>Kay Siver Bø</Name>
+			<Email>578167@stud.hvl.no</Email>
+		</Author>
 	</Metadata>
 	<Options>
 		<Output category="File" address="local/path/to/report.xlsx" password="true" />
@@ -11,24 +16,28 @@
 	</Options>
 	<Work>
 		<Target host="10.0.0.1">
-			<Job category="McAfee" port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
+			<Job category="McAfee" port="443" key="0001"/>
 		</Target>
 		<Target host="10.0.0.2">
-			<Job category="McAfee" port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
-			<Job category="Acronis" port="80" key="b00db39f948d13ea1e59b4d6fce56389"/>
-			<Job category="vCenter" port="443" key="b00db39f948d13ea1e59b4d6fce56389"/>
+			<Job category="McAfee" port="443" key="0001"/>
+			<Job category="Acronis" port="80" key="0001"/>
+			<Job category="vCenter" port="443" key="0001"/>
 		</Target>
 		<Target host="10.0.0.3">
-			<Job category="Custom" port="22" key="ssh-rsa 0000000000== admin@machine" username="admin" scripts="0934 0935 0936"/>
-			<Job category="Custom" port="22" key="ssh-rsa 0000000000== admin@machine" username="admin" scripts="0937 0938 0939"/>
+			<Job category="Custom" port="22" key="0002" scripts="0934 0935 0936"/>
+			<Job category="Custom" port="22" key="0002" scripts="0937 0938 0939"/>
 		</Target>
 	</Work>
+	<Keys>
+		<Key id="0001" name="Lord" category="API">b00db39f948d13ea1e59b4d6fce56389</Key>
+		<Key id="0002" name="Sire" category="SSH" src="relative/path/to/key" user="admin"/>
+	</Keys>
 	<Scripts>
-		<Script id="0934" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0935" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0936" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0937" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0938" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0939" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0934" name="Peasant 1" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0935" name="Peasant 2" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0936" name="Peasant 3" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0937" name="Peasant 4" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0938" name="Peasant 5" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0939" name="Peasant 6" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
 	</Scripts>
 </ProgramConfiguration>
