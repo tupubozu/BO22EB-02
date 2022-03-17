@@ -76,6 +76,8 @@
             this.label8 = new System.Windows.Forms.Label();
             this.portNumeric = new System.Windows.Forms.NumericUpDown();
             this.portOverrideCheckBox = new System.Windows.Forms.CheckBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.jobNameTextBox = new System.Windows.Forms.TextBox();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.metadataGroupBox.SuspendLayout();
@@ -342,6 +344,7 @@
             this.hostRemoveButton.TabIndex = 3;
             this.hostRemoveButton.Text = "Remove";
             this.hostRemoveButton.UseVisualStyleBackColor = true;
+            this.hostRemoveButton.Click += new System.EventHandler(this.hostRemoveButton_Click);
             // 
             // hostAddButton
             // 
@@ -352,6 +355,7 @@
             this.hostAddButton.TabIndex = 2;
             this.hostAddButton.Text = "Add";
             this.hostAddButton.UseVisualStyleBackColor = true;
+            this.hostAddButton.Click += new System.EventHandler(this.hostAddButton_Click);
             // 
             // hostTextBox
             // 
@@ -372,6 +376,7 @@
             this.hostListBox.Name = "hostListBox";
             this.hostListBox.Size = new System.Drawing.Size(317, 95);
             this.hostListBox.TabIndex = 0;
+            this.hostListBox.SelectedIndexChanged += new System.EventHandler(this.hostListBox_SelectedIndexChanged);
             // 
             // keyGroupBox
             // 
@@ -413,6 +418,8 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.jobGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.jobGroupBox.Controls.Add(this.label9);
+            this.jobGroupBox.Controls.Add(this.jobNameTextBox);
             this.jobGroupBox.Controls.Add(this.portOverrideCheckBox);
             this.jobGroupBox.Controls.Add(this.portNumeric);
             this.jobGroupBox.Controls.Add(this.label8);
@@ -471,6 +478,7 @@
             this.jobRemoveButton.TabIndex = 6;
             this.jobRemoveButton.Text = "Remove";
             this.jobRemoveButton.UseVisualStyleBackColor = true;
+            this.jobRemoveButton.Click += new System.EventHandler(this.jobRemoveButton_Click);
             // 
             // jobAddButton
             // 
@@ -481,22 +489,24 @@
             this.jobAddButton.TabIndex = 5;
             this.jobAddButton.Text = "Add";
             this.jobAddButton.UseVisualStyleBackColor = true;
+            this.jobAddButton.Click += new System.EventHandler(this.jobAddButton_Click);
             // 
             // jobCategoryComboBox
             // 
             this.jobCategoryComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.jobCategoryComboBox.FormattingEnabled = true;
-            this.jobCategoryComboBox.Location = new System.Drawing.Point(64, 121);
+            this.jobCategoryComboBox.Location = new System.Drawing.Point(64, 156);
             this.jobCategoryComboBox.Name = "jobCategoryComboBox";
             this.jobCategoryComboBox.Size = new System.Drawing.Size(214, 21);
             this.jobCategoryComboBox.TabIndex = 7;
+            this.jobCategoryComboBox.SelectedIndexChanged += new System.EventHandler(this.jobCategoryComboBox_SelectedIndexChanged);
             // 
             // label7
             // 
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 124);
+            this.label7.Location = new System.Drawing.Point(6, 159);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(52, 13);
             this.label7.TabIndex = 8;
@@ -571,12 +581,13 @@
             this.hostModifyButton.TabIndex = 5;
             this.hostModifyButton.Text = "Modify";
             this.hostModifyButton.UseVisualStyleBackColor = true;
+            this.hostModifyButton.Click += new System.EventHandler(this.hostModifyButton_Click);
             // 
             // label8
             // 
             this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 152);
+            this.label8.Location = new System.Drawing.Point(6, 187);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(32, 13);
             this.label8.TabIndex = 9;
@@ -585,7 +596,7 @@
             // portNumeric
             // 
             this.portNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.portNumeric.Location = new System.Drawing.Point(64, 149);
+            this.portNumeric.Location = new System.Drawing.Point(64, 184);
             this.portNumeric.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -605,18 +616,39 @@
             0,
             0,
             0});
+            this.portNumeric.ValueChanged += new System.EventHandler(this.portNumeric_ValueChanged);
             // 
             // portOverrideCheckBox
             // 
             this.portOverrideCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.portOverrideCheckBox.AutoSize = true;
-            this.portOverrideCheckBox.Location = new System.Drawing.Point(137, 151);
+            this.portOverrideCheckBox.Location = new System.Drawing.Point(137, 186);
             this.portOverrideCheckBox.Name = "portOverrideCheckBox";
             this.portOverrideCheckBox.Size = new System.Drawing.Size(66, 17);
             this.portOverrideCheckBox.TabIndex = 11;
             this.portOverrideCheckBox.Text = "Override";
             this.portOverrideCheckBox.UseVisualStyleBackColor = true;
             this.portOverrideCheckBox.CheckedChanged += new System.EventHandler(this.portOverrideCheckBox_CheckedChanged);
+            // 
+            // label9
+            // 
+            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 133);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(38, 13);
+            this.label9.TabIndex = 13;
+            this.label9.Text = "Name:";
+            // 
+            // jobNameTextBox
+            // 
+            this.jobNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.jobNameTextBox.Location = new System.Drawing.Point(64, 130);
+            this.jobNameTextBox.Name = "jobNameTextBox";
+            this.jobNameTextBox.Size = new System.Drawing.Size(214, 20);
+            this.jobNameTextBox.TabIndex = 12;
+            this.jobNameTextBox.Leave += new System.EventHandler(this.jobNameTextBox_Leave);
             // 
             // PrimaryForm
             // 
@@ -700,6 +732,8 @@
         private System.Windows.Forms.CheckBox portOverrideCheckBox;
         private System.Windows.Forms.NumericUpDown portNumeric;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox jobNameTextBox;
     }
 }
 

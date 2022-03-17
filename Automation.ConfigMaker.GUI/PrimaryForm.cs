@@ -21,8 +21,16 @@ namespace Automation.ConfigMaker.GUI
         public static readonly string DefaultFileName = "run.prgconf";
         public static readonly string DefaultFileExtension = ".prgconf";
         public static readonly string DefaultFileFilter = $"Configuration |{DefaultFileExtension}";
+        public static readonly ProgramConfigurationTargetJobCategory[] targetJobCategories = new ProgramConfigurationTargetJobCategory[]
+        {
+            ProgramConfigurationTargetJobCategory.McAfee,
+            ProgramConfigurationTargetJobCategory.Acronis,
+            ProgramConfigurationTargetJobCategory.vCenter,
+            ProgramConfigurationTargetJobCategory.Custom
+        };
+    
 
-        private ProgramConfiguration configuration;
+    private ProgramConfiguration configuration;
 
         public PrimaryForm()
         {
@@ -30,8 +38,16 @@ namespace Automation.ConfigMaker.GUI
 
             configuration = new ProgramConfiguration()
             {
-                Metadata = new ProgramConfigurationMetadata { Author = new ProgramConfigurationMetadataAuthor()},
-                Options = new ProgramConfigurationOutput[0],
+                Metadata = new ProgramConfigurationMetadata { Author = new ProgramConfigurationMetadataAuthor() },
+                Options = new ProgramConfigurationOutput[]
+                {
+                    new ProgramConfigurationOutput
+                    {
+                        Category = ProgramConfigurationOutputCategory.File,
+                        Address = "report.xlsx",
+                        Password = false
+                    }
+                },
                 Scripts = new ProgramConfigurationScript[0],
                 Work = new ProgramConfigurationTarget[0],
             };
@@ -45,6 +61,9 @@ namespace Automation.ConfigMaker.GUI
             openFileDialog.FileName = DefaultFileName;
             openFileDialog.DefaultExt = DefaultFileExtension;
             openFileDialog.Filter = DefaultFileFilter;
+
+            foreach (ProgramConfigurationTargetJobCategory targetJobCategory in targetJobCategories)
+                jobCategoryComboBox.Items.Add(targetJobCategory);
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -52,7 +71,7 @@ namespace Automation.ConfigMaker.GUI
             Application.Exit();
         }
 
-        private async void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -84,7 +103,7 @@ namespace Automation.ConfigMaker.GUI
             }
         }
 
-        private async void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -144,6 +163,79 @@ namespace Automation.ConfigMaker.GUI
         private void portOverrideCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             portNumeric.Enabled = portOverrideCheckBox.Checked;
+        }
+
+        private void hostAddButton_Click(object sender, EventArgs e)
+        {
+            hostListBox.Items.Add(new ProgramConfigurationTarget { Host = hostTextBox.Text});
+        }
+
+        private void hostRemoveButton_Click(object sender, EventArgs e)
+        {
+            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
+                hostListBox.Items.RemoveAt(hostListBox.SelectedIndex);
+        }
+
+        private void hostModifyButton_Click(object sender, EventArgs e)
+        {
+            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
+                (hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfigurationTarget).Host = hostTextBox.Text;
+        }
+
+        private void hostListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
+            {
+                jobListBox.Items.Clear();
+                if (((hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfigurationTarget)?.Job?.Length ?? -1)  >= 0)
+                    jobListBox.Items.AddRange((hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfigurationTarget).Job);
+            }
+        }
+
+        private void jobAddButton_Click(object sender, EventArgs e)
+        {
+            jobListBox.Items.Add(new ProgramConfigurationTargetJob
+            {
+                Port = (ushort)portNumeric.Value,
+                Category = ProgramConfigurationTargetJobCategory.Custom
+            });
+            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
+                (hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfigurationTarget).Job = jobListBox.Items.Cast<ProgramConfigurationTargetJob>().ToArray(); 
+
+        }
+
+        private void jobRemoveButton_Click(object sender, EventArgs e)
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+                jobListBox.Items.RemoveAt(jobListBox.SelectedIndex);
+
+            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
+                (hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfigurationTarget).Job = jobListBox.Items.Cast<ProgramConfigurationTargetJob>().ToArray();
+        }
+
+        private void jobCategoryComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+                if (!(jobCategoryComboBox.SelectedItem is null))
+                {
+                    (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfigurationTargetJob).Category = (ProgramConfigurationTargetJobCategory)jobCategoryComboBox.SelectedItem;
+                    if ((ProgramConfigurationTargetJobCategory)jobCategoryComboBox.SelectedItem == ProgramConfigurationTargetJobCategory.Custom)
+                        portNumeric.Value = 22;
+                    else 
+                        portNumeric.Value = 443;
+                }
+        }
+
+        private void portNumeric_ValueChanged(object sender, EventArgs e)
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfigurationTargetJob).Port = (ushort)portNumeric.Value;
+        }
+
+        private void jobNameTextBox_Leave(object sender, EventArgs e)
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfigurationTargetJob).Name = jobNameTextBox.Text;
         }
     }
 }

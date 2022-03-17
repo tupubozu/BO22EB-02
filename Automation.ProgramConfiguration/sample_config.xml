@@ -19,13 +19,13 @@
 			<Job category="McAfee" port="443" key="0001"/>
 		</Target>
 		<Target host="10.0.0.2">
-			<Job category="McAfee" port="443" key="0001"/>
-			<Job category="Acronis" port="80" key="0001"/>
-			<Job category="vCenter" port="443" key="0001"/>
+			<Job name="Pickaxe 1" category="McAfee" port="443" key="0001"/>
+			<Job name="Pickaxe 1" category="Acronis" port="80" key="0001"/>
+			<Job name="Pickaxe 1" category="vCenter" port="443" key="0001"/>
 		</Target>
 		<Target host="10.0.0.3">
-			<Job category="Custom" port="22" key="0002" scripts="0934 0935 0936"/>
-			<Job category="Custom" port="22" key="0002" scripts="0937 0938 0939"/>
+			<Job name="Pickaxe 1" category="Custom" port="22" key="0002" scripts="0934 0935 0936"/>
+			<Job name="Pickaxe 1" category="Custom" port="22" key="0002" scripts="0937 0938 0939"/>
 		</Target>
 	</Work>
 	<Keys>

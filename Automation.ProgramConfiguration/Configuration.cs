@@ -307,6 +307,9 @@
 
         private ushort[] scriptsField;
 
+        [System.Xml.Serialization.XmlAttributeAttribute("name")]
+        public string Name { get; set; }
+
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("category")]
         public ProgramConfigurationTargetJobCategory Category
