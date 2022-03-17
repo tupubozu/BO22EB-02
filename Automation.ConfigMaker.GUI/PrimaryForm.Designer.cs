@@ -468,6 +468,7 @@
             this.jobListBox.Name = "jobListBox";
             this.jobListBox.Size = new System.Drawing.Size(205, 95);
             this.jobListBox.TabIndex = 0;
+            this.jobListBox.SelectedIndexChanged += new System.EventHandler(this.jobListBox_SelectedIndexChanged);
             // 
             // jobRemoveButton
             // 

@@ -31,6 +31,8 @@ namespace Automation.ConfigMaker.GUI
     
 
     private ProgramConfiguration configuration;
+        private Dictionary<ushort, Stream> ScriptDictionary;
+        private Dictionary<ushort, Stream> KeyDictionary;
 
         public PrimaryForm()
         {
@@ -236,6 +238,23 @@ namespace Automation.ConfigMaker.GUI
         {
             if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
                 (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfigurationTargetJob).Name = jobNameTextBox.Text;
+        }
+
+        private void jobListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+            {
+                var job = jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfigurationTargetJob;
+                portNumeric.Value = job.Port;
+                jobNameTextBox.Text = job.Name;
+                jobCategoryComboBox.SelectedIndex = jobCategoryComboBox.Items.IndexOf(job.Category);
+
+                foreach (ushort scriptID in job.Scripts)
+                    scriptListBox.Items.Add(ScriptDictionary[scriptID]);
+
+                foreach (ushort keyID in job.Keys)
+                    keyListBox.Items.Add(KeyDictionary[keyID]);
+            }
         }
     }
 }

@@ -303,7 +303,7 @@
 
         private ushort portField;
 
-        private byte keyField;
+        private byte[] keyField;
 
         private ushort[] scriptsField;
 
@@ -339,8 +339,8 @@
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("key")]
-        public byte Key
+        [System.Xml.Serialization.XmlAttributeAttribute("keys")]
+        public byte[] Keys
         {
             get
             {
