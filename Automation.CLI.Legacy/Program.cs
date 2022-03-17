@@ -46,10 +46,11 @@ namespace Automation.CLI.Legacy
             {
                 using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
                 using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
-                using (var hash = SHA512.Create())
-                using (var aesCrypto = Crypto.GetAes512(hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes("This is a completely valid vay of initializing the IV. Trust me, I am an engineer!")))))
+                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
+                using (var passwordHash = SHA256.Create())
                 {
-                    aesCrypto.Key = hash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(Console.ReadLine())));
+                    Console.Write("Password: ");
+                    aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(Console.ReadLine())));
 
                     var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
 
@@ -57,25 +58,20 @@ namespace Automation.CLI.Legacy
                     {
                         config = ProgramConfiguration.Parse(cryptoConfigStream);
                     }
-
                 }
+
+                Log.Information("Read configuration \"{0}\" made by {1} ({2})", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email);
+                Console.WriteLine(config.Metadata.Description);
             }
             catch (Exception ex)
             {
                 Log.Debug("Exception: {0}", ex);
                 Log.Error("Exception: {0}", ex.Message);
                 Log.Fatal("Error encountered while reading configuration: {0}: {1}", ex.GetType().FullName, ex.Message);
-                Log.Information("Exiting");
                 return;
             }
 
-            Console.WriteLine(config.Metadata.Description);
-
-            var a = config.Work.Last();
-            var b = a.Job.First();
-
-            var sshClient = new SshClient(host: a.Host, port: b.Port, username: b.Username, keyFiles: new PrivateKeyFile(new MemoryStream(Encoding.Unicode.GetBytes(b.Key))));
-            Console.WriteLine(sshClient.ConnectionInfo);
+            Log.Information("Exiting");
 #if DEBUG
             Console.ReadKey(true);
 #endif

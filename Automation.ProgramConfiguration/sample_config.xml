@@ -12,7 +12,7 @@
 	<Options>
 		<Output category="File" address="local/path/to/report.xlsx" password="true" />
 		<Output category="Email" address="admin@company.email" password="false" />
-		<Output category="Console" />
+		<Output category="Console" password="false" />
 	</Options>
 	<Work>
 		<Target host="10.0.0.1">

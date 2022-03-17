@@ -1,5 +1,6 @@
 ﻿namespace Automation.Configuration
 {
+
     // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
     /// <remarks/>
     [System.SerializableAttribute()]
@@ -9,13 +10,28 @@
     public partial class ProgramConfiguration
     {
 
+        private ProgramConfigurationMetadata metadataField;
+
         private ProgramConfigurationOutput[] optionsField;
 
         private ProgramConfigurationTarget[] workField;
 
-        private ProgramConfigurationMetadata metadataField;
+        private ProgramConfigurationKey[] keysField;
 
         private ProgramConfigurationScript[] scriptsField;
+
+        /// <remarks/>
+        public ProgramConfigurationMetadata Metadata
+        {
+            get
+            {
+                return this.metadataField;
+            }
+            set
+            {
+                this.metadataField = value;
+            }
+        }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Output", IsNullable = false)]
@@ -46,18 +62,18 @@
         }
 
         /// <remarks/>
-        public ProgramConfigurationMetadata Metadata
+        [System.Xml.Serialization.XmlArrayItemAttribute("Key", IsNullable = false)]
+        public ProgramConfigurationKey[] Keys
         {
             get
             {
-                return this.metadataField;
+                return this.keysField;
             }
             set
             {
-                this.metadataField = value;
+                this.keysField = value;
             }
         }
-
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Script", IsNullable = false)]
@@ -72,31 +88,113 @@
                 this.scriptsField = value;
             }
         }
-
-        public static bool TryParse(System.IO.Stream stream, out ProgramConfiguration config)
-        {
-            try
-            {
-                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
-                config = serializer.Deserialize(stream) as ProgramConfiguration;
-                return true;
-            }
-            catch (System.Exception)
-            {
-                config = null;
-                return false;
-            }
-        }
-
-        public static ProgramConfiguration Parse(System.IO.Stream stream)
-        {
-                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
-                return serializer.Deserialize(stream) as ProgramConfiguration;   
-        }
-
     }
 
-    public enum ConfigurationOutputCategory { File, Email, Console }
+    /// <remarks/>
+    [System.SerializableAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class ProgramConfigurationMetadata
+    {
+
+        private string titleField;
+
+        private string descriptionField;
+
+        private System.DateTime revisionField;
+
+        private ProgramConfigurationMetadataAuthor authorField;
+
+        /// <remarks/>
+        public string Title
+        {
+            get
+            {
+                return this.titleField;
+            }
+            set
+            {
+                this.titleField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Description
+        {
+            get
+            {
+                return this.descriptionField;
+            }
+            set
+            {
+                this.descriptionField = value;
+            }
+        }
+
+        /// <remarks/>
+        public System.DateTime Revision
+        {
+            get
+            {
+                return this.revisionField;
+            }
+            set
+            {
+                this.revisionField = value;
+            }
+        }
+
+        /// <remarks/>
+        public ProgramConfigurationMetadataAuthor Author
+        {
+            get
+            {
+                return this.authorField;
+            }
+            set
+            {
+                this.authorField = value;
+            }
+        }
+    }
+
+    /// <remarks/>
+    [System.SerializableAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class ProgramConfigurationMetadataAuthor
+    {
+
+        private string nameField;
+
+        private string emailField;
+
+        /// <remarks/>
+        public string Name
+        {
+            get
+            {
+                return this.nameField;
+            }
+            set
+            {
+                this.nameField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Email
+        {
+            get
+            {
+                return this.emailField;
+            }
+            set
+            {
+                this.emailField = value;
+            }
+        }
+    }
 
     /// <remarks/>
     [System.SerializableAttribute()]
@@ -105,7 +203,7 @@
     public partial class ProgramConfigurationOutput
     {
 
-        private ConfigurationOutputCategory categoryField;
+        private ProgramConfigurationOutputCategory categoryField;
 
         private string addressField;
 
@@ -113,7 +211,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("category")]
-        public ConfigurationOutputCategory Category
+        public ProgramConfigurationOutputCategory Category
         {
             get
             {
@@ -141,7 +239,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("password")]
-        public bool? Password
+        public bool Password
         {
             get
             {
@@ -149,11 +247,10 @@
             }
             set
             {
-                this.passwordField = value ?? false;
+                this.passwordField = value;
             }
         }
     }
-
 
     /// <remarks/>
     [System.SerializableAttribute()]
@@ -195,8 +292,6 @@
         }
     }
 
-    public enum ProgramConfigurationTargetJobCategory { McAfee, Acronis, vCenter, Custom }
-
     /// <remarks/>
     [System.SerializableAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -208,11 +303,9 @@
 
         private ushort portField;
 
-        private string keyField;
+        private byte keyField;
 
-        private string usernameField;
-
-        private string[] scriptsField;
+        private ushort[] scriptsField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("category")]
@@ -244,7 +337,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("key")]
-        public string Key
+        public byte Key
         {
             get
             {
@@ -256,22 +349,9 @@
             }
         }
 
-        [System.Xml.Serialization.XmlAttributeAttribute("username")]
-        public string Username
-        {
-            get
-            {
-                return this.usernameField;
-            }
-            set
-            {
-                this.usernameField = value;
-            }
-        }
-
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("scripts")]
-        public string[] Scripts
+        public ushort[] Scripts
         {
             get
             {
@@ -288,36 +368,102 @@
     [System.SerializableAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationMetadata
+    public partial class ProgramConfigurationKey
     {
 
-        private string descriptionField;
+        private byte idField;
 
-        private System.DateTime revisionField;
+        private string nameField;
+
+        private string categoryField;
+
+        private string srcField;
+
+        private string userField;
+
+        private string valueField;
 
         /// <remarks/>
-        public string Description
+        [System.Xml.Serialization.XmlAttributeAttribute("id")]
+        public byte ID
         {
             get
             {
-                return this.descriptionField;
+                return this.idField;
             }
             set
             {
-                this.descriptionField = value;
+                this.idField = value;
             }
         }
 
         /// <remarks/>
-        public System.DateTime Revision
+        [System.Xml.Serialization.XmlAttributeAttribute("name")]
+        public string Name
         {
             get
             {
-                return this.revisionField;
+                return this.nameField;
             }
             set
             {
-                this.revisionField = value;
+                this.nameField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("category")]
+        public string Category
+        {
+            get
+            {
+                return this.categoryField;
+            }
+            set
+            {
+                this.categoryField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("src")]
+        public string Source
+        {
+            get
+            {
+                return this.srcField;
+            }
+            set
+            {
+                this.srcField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("user")]
+        public string User
+        {
+            get
+            {
+                return this.userField;
+            }
+            set
+            {
+                this.userField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public string Key
+        {
+            get
+            {
+                return this.valueField;
+            }
+            set
+            {
+                this.valueField = value;
             }
         }
     }
@@ -331,15 +477,17 @@
 
         private ushort idField;
 
+        private string nameField;
+
         private string srcField;
 
-        private byte[] keyField;
+        private string keyField;
 
-        private byte[] ivField;
+        private string ivField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("id")]
-        public ushort Id
+        public ushort ID
         {
             get
             {
@@ -348,6 +496,20 @@
             set
             {
                 this.idField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("name")]
+        public string Name
+        {
+            get
+            {
+                return this.nameField;
+            }
+            set
+            {
+                this.nameField = value;
             }
         }
 
@@ -367,7 +529,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("key")]
-        public byte[] Key
+        public string Key
         {
             get
             {
@@ -381,7 +543,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("iv")]
-        public byte[] iv
+        public string IV
         {
             get
             {
