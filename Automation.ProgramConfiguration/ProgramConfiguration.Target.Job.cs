@@ -23,7 +23,7 @@ namespace Automation.Configuration
                 public ushort Port { get; set; }
 
                 [XmlAttribute("keys")]
-                public byte[] Keys { get; set; }
+                public ushort[] Keys { get; set; }
 
                 [XmlAttribute("scripts")]
                 public ushort[] Scripts { get; set; }

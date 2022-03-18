@@ -83,6 +83,9 @@
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.passwordBox);
             this.Controls.Add(this.label1);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(262, 115);
+            this.MinimumSize = new System.Drawing.Size(262, 115);
             this.Name = "AuthenticationForm";
             this.Text = "Authentication";
             this.ResumeLayout(false);

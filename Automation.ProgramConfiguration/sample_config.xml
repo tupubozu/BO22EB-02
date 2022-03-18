@@ -30,14 +30,14 @@
 	</Work>
 	<Keys>
 		<Key id="0001" name="Lord" category="API">b00db39f948d13ea1e59b4d6fce56389</Key>
-		<Key id="0002" name="Sire" category="SSH" src="relative/path/to/key" user="admin"/>
+		<Key id="0002" name="Sire" category="SSH" src="relative/path/to/key" user="admin" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
 	</Keys>
 	<Scripts>
-		<Script id="0934" name="Peasant 1" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0935" name="Peasant 2" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0936" name="Peasant 3" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0937" name="Peasant 4" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0938" name="Peasant 5" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
-		<Script id="0939" name="Peasant 6" src="relative/path/to/script1.sh" key="12309a09b08cff0" iv="12309a09b08cff0"/>
+		<Script id="0934" name="Peasant 1" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
+		<Script id="0935" name="Peasant 2" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
+		<Script id="0936" name="Peasant 3" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
+		<Script id="0937" name="Peasant 4" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
+		<Script id="0938" name="Peasant 5" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
+		<Script id="0939" name="Peasant 6" src="relative/path/to/script1.sh" crypt_key="12309a09b08cff0" crypt_iv="12309a09b08cff0"/>
 	</Scripts>
 </ProgramConfiguration>

@@ -11,8 +11,15 @@ namespace Automation.Configuration
         [XmlType(AnonymousType = true)]
         public class Key
         {
+            private static ushort NextID = 0;
+
+            public Key()
+            {
+                ID = NextID++;
+            }
+
             [XmlAttribute("id")]
-            public byte ID { get; set; }
+            public ushort ID { get; set; }
 
             [XmlAttribute("name")]
             public string Name { get; set; }
@@ -25,6 +32,12 @@ namespace Automation.Configuration
 
             [XmlAttribute("user")]
             public string User { get; set; }
+
+            [XmlAttribute("crypt_key")]
+            public byte[] EncryptionKey { get; set; }
+            
+            [XmlAttribute("crypt_IV")]
+            public byte[] EncryptionIV { get; set; }
 
             [XmlText()]
             public string Value { get; set; }

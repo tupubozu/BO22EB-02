@@ -11,6 +11,13 @@ namespace Automation.Configuration
         [XmlType(AnonymousType = true)]
         public class Script
         {
+            private static ushort NextID = 0;
+
+            public Script()
+            {
+                ID = NextID++;
+            }
+
             [XmlAttribute("id")]
             public ushort ID { get; set; }
 
@@ -20,11 +27,11 @@ namespace Automation.Configuration
             [XmlAttribute("src")]
             public string Source { get; set; }
 
-            [XmlAttribute("key")]
-            public string Key { get; set; }
+            [XmlAttribute("crypt_key")]
+            public byte[] EncryptionKey { get; set; }
 
-            [XmlAttribute("iv")]
-            public string IV { get; set; }
+            [XmlAttribute("crypt_iv")]
+            public byte[] EncryptionIV { get; set; }
 
             public override string ToString()
             {
