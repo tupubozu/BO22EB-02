@@ -11,7 +11,8 @@ namespace Automation.Configuration
         [XmlType(AnonymousType = true)]
         public class Key
         {
-            private static ushort NextID = 0;
+            [XmlIgnore]
+            public static ushort NextID { private get; set; } = 0;
 
             public Key()
             {

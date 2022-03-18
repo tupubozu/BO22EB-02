@@ -28,7 +28,7 @@ namespace Automation.ConfigMaker.GUI
             ProgramConfiguration.Target.Job.JobCategory.vCenter,
             ProgramConfiguration.Target.Job.JobCategory.Custom
         };
-    
+
 
         private ProgramConfiguration configuration;
         private Dictionary<ushort, byte[]> ScriptDictionary;
@@ -81,6 +81,9 @@ namespace Automation.ConfigMaker.GUI
             {
                 try
                 {
+                    ScriptDictionary.Clear();
+                    KeyDictionary.Clear(); 
+
                     using (var zipConfig = new ZipArchive(openFileDialog.OpenFile(), ZipArchiveMode.Read, false, Encoding.UTF8))
                     {
                         using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
@@ -147,11 +150,23 @@ namespace Automation.ConfigMaker.GUI
                                 using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
                                 using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
                                 {
-                                    KeyDictionary.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                    ScriptDictionary.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
                                 }
                             }
                         }
                     }
+
+                    ProgramConfiguration.Script.NextID = (ushort)(configuration.Scripts.Select((item) => item.ID).Max() + 1);
+                    ProgramConfiguration.Key.NextID = (ushort)(configuration.Keys.Select((item) => item.ID).Max() + 1);
+
+                    titleTextBox.Text = configuration.Metadata.Title;
+                    revisionTextBox.Text = configuration.Metadata.Revision.ToString("O");
+                    descriptionTextBox.Text = configuration.Metadata.Description;
+                    authorNameTextBox.Text = configuration.Metadata.Author.Name;
+                    authorEmailTextBox.Text = configuration.Metadata.Author.Email;
+
+                    hostListBox.Items.Clear();
+                    hostListBox.Items.AddRange(configuration.Work);
                 }
                 catch (Exception ex)
                 {
@@ -168,6 +183,9 @@ namespace Automation.ConfigMaker.GUI
                 {
                     using (var zipConfig = new ZipArchive(saveFileDialog.OpenFile(), ZipArchiveMode.Create, false, Encoding.UTF8))
                     {
+                        toolStripProgressBar.Value = 0;
+                        toolStripStatusLabel.Text = "Writing keys to configuration file";
+                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration.Keys.Length;
                         foreach (var key in configuration.Keys)
                         {
                             if (key.Category == ProgramConfiguration.Key.KeyCategory.SSH)
@@ -175,36 +193,47 @@ namespace Automation.ConfigMaker.GUI
                                 {
                                     key.EncryptionIV = aesCrypto.IV;
                                     key.EncryptionKey = aesCrypto.Key;
-                                    key.Source = $"k#{key.ID}";
+
+                                    key.Source = $"k-{key.ID}.aes";
 
                                     var encryptedConfig = zipConfig.CreateEntry(key.Source);
 
-                                    using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Read))
+                                    using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                                     using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
                                     {
                                         await writer.WriteAsync(Encoding.UTF8.GetString(KeyDictionary[key.ID]));
+                                        await writer.FlushAsync();
                                     }
                                 }
+                            toolStripProgressBar.PerformStep();
                         }
 
+                        toolStripProgressBar.Value = 0;
+                        toolStripStatusLabel.Text = "Writing scripts to configuration file";
+                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration.Scripts.Length;
                         foreach (var script in configuration.Scripts)
                         {
                             using (var aesCrypto = Crypto.GetAes())
                             {
                                 script.EncryptionIV = aesCrypto.IV;
                                 script.EncryptionKey = aesCrypto.Key;
-                                script.Source = $"s#{script.ID}";
+
+                                script.Source = $"s-{script.ID}.aes";
 
                                 var encryptedConfig = zipConfig.CreateEntry(script.Source);
 
-                                using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Read))
+                                using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                                 using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
                                 {
                                     await writer.WriteAsync(Encoding.UTF8.GetString(ScriptDictionary[script.ID]));
+                                    await writer.FlushAsync();
                                 }
                             }
+                            toolStripProgressBar.PerformStep();
                         }
 
+                        toolStripProgressBar.Value = 0;
+                        toolStripStatusLabel.Text = "Writing XML data to configuration file";
                         using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
                         using (var passwordHash = SHA256.Create())
                         {
@@ -233,11 +262,14 @@ namespace Automation.ConfigMaker.GUI
                             }
 
                         }
+                        toolStripProgressBar.Value = 100;
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "ERROR");
+                    toolStripProgressBar.Value = 0;
+                    toolStripStatusLabel.Text = ex.Message;
                 }
             }
         }
@@ -269,13 +301,16 @@ namespace Automation.ConfigMaker.GUI
 
         private void hostAddButton_Click(object sender, EventArgs e)
         {
-            hostListBox.Items.Add(new ProgramConfiguration.Target { Host = hostTextBox.Text});
+            hostListBox.Items.Add(new ProgramConfiguration.Target { Host = hostTextBox.Text });
+            configuration.Work = hostListBox.Items.Cast<ProgramConfiguration.Target>().ToArray();
         }
 
         private void hostRemoveButton_Click(object sender, EventArgs e)
         {
             if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
                 hostListBox.Items.RemoveAt(hostListBox.SelectedIndex);
+
+            configuration.Work = hostListBox.Items.Cast<ProgramConfiguration.Target>().ToArray();
         }
 
         private void hostModifyButton_Click(object sender, EventArgs e)
@@ -289,7 +324,7 @@ namespace Automation.ConfigMaker.GUI
             if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
             {
                 jobListBox.Items.Clear();
-                if (((hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfiguration.Target)?.Jobs?.Length ?? -1)  >= 0)
+                if (((hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfiguration.Target)?.Jobs?.Length ?? -1) >= 0)
                     jobListBox.Items.AddRange((hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfiguration.Target).Jobs);
             }
         }
@@ -301,9 +336,7 @@ namespace Automation.ConfigMaker.GUI
                 Port = (ushort)portNumeric.Value,
                 Category = ProgramConfiguration.Target.Job.JobCategory.Custom
             });
-            if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
-                (hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfiguration.Target).Jobs = jobListBox.Items.Cast<ProgramConfiguration.Target.Job>().ToArray(); 
-
+            UpdateJobs();
         }
 
         private void jobRemoveButton_Click(object sender, EventArgs e)
@@ -311,6 +344,11 @@ namespace Automation.ConfigMaker.GUI
             if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
                 jobListBox.Items.RemoveAt(jobListBox.SelectedIndex);
 
+            UpdateJobs();
+        }
+
+        private void UpdateJobs()
+        {
             if (hostListBox.SelectedIndex >= 0 && hostListBox.SelectedIndex < hostListBox.Items.Count)
                 (hostListBox.Items[hostListBox.SelectedIndex] as ProgramConfiguration.Target).Jobs = jobListBox.Items.Cast<ProgramConfiguration.Target.Job>().ToArray();
         }
@@ -323,7 +361,7 @@ namespace Automation.ConfigMaker.GUI
                     (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job).Category = (ProgramConfiguration.Target.Job.JobCategory)jobCategoryComboBox.SelectedItem;
                     if ((ProgramConfiguration.Target.Job.JobCategory)jobCategoryComboBox.SelectedItem == ProgramConfiguration.Target.Job.JobCategory.Custom)
                         portNumeric.Value = 22;
-                    else 
+                    else
                         portNumeric.Value = 443;
                 }
         }
@@ -342,6 +380,9 @@ namespace Automation.ConfigMaker.GUI
 
         private void jobListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            scriptListBox.Items.Clear();
+            keyListBox.Items.Clear();
+
             if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
             {
                 var job = jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job;
@@ -364,8 +405,41 @@ namespace Automation.ConfigMaker.GUI
             if (keyListBox.SelectedIndex >= 0 && keyListBox.SelectedIndex < keyListBox.Items.Count)
                 keyListBox.Items.RemoveAt(keyListBox.SelectedIndex);
 
-            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
-                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job).Keys = keyListBox.Items.Cast<ProgramConfiguration.Key>().Select((key) => key.ID).ToArray();
+            UpdateKeys();
+        }
+
+        private void keyModifyButton_Click(object sender, EventArgs e)
+        {
+            if (keyListBox.SelectedIndex >= 0 && keyListBox.SelectedIndex < keyListBox.Items.Count)
+                keyModify((ProgramConfiguration.Key)keyListBox.Items[keyListBox.SelectedIndex]);
+        }
+
+        private bool keyModify(ProgramConfiguration.Key key)
+        {
+            var keyPropertiesCtrl = new KeyPropertiesForm(key);
+            if (keyPropertiesCtrl.ShowDialog() == DialogResult.OK)
+            {
+                if (KeyDictionary.ContainsKey(key.ID))
+                    KeyDictionary[key.ID] = keyPropertiesCtrl.FileContents;
+                else
+                    KeyDictionary.Add(key.ID, keyPropertiesCtrl.FileContents);
+                return true;
+            }
+            else
+            {
+                MessageBox.Show("Operation has been aborted");
+                return false;
+            }
+        }
+
+        private void keyAddButton_Click(object sender, EventArgs e)
+        {
+            var key = new ProgramConfiguration.Key();
+            if (keyModify(key))
+            {
+                keyListBox.Items.Add(key);
+                UpdateKeys();
+            }
         }
 
         private void scriptRemoveButton_Click(object sender, EventArgs e)
@@ -373,8 +447,61 @@ namespace Automation.ConfigMaker.GUI
             if (scriptListBox.SelectedIndex >= 0 && scriptListBox.SelectedIndex < scriptListBox.Items.Count)
                 scriptListBox.Items.RemoveAt(scriptListBox.SelectedIndex);
 
+            UpdateScripts();
+        }
+
+        private void scriptModifyButton_Click(object sender, EventArgs e)
+        {
+            if (scriptListBox.SelectedIndex >= 0 && scriptListBox.SelectedIndex < scriptListBox.Items.Count)
+                scriptModify((ProgramConfiguration.Script)scriptListBox.Items[scriptListBox.SelectedIndex]);
+        }
+
+        private bool scriptModify(ProgramConfiguration.Script script)
+        {
+            var scriptPropertiesCtrl = new ScriptPropertiesForm(script);
+            if (scriptPropertiesCtrl.ShowDialog() == DialogResult.OK)
+            {
+                if (ScriptDictionary.ContainsKey(script.ID))
+                    ScriptDictionary[script.ID] = scriptPropertiesCtrl.FileContents;
+                else
+                    ScriptDictionary.Add(script.ID, scriptPropertiesCtrl.FileContents);
+                return true;
+            }
+            else
+            {
+                MessageBox.Show("Operation has been aborted");
+                return false;
+            }
+        }
+
+        private void scriptAddButton_Click(object sender, EventArgs e)
+        {
+            var script = new ProgramConfiguration.Script();
+            if (scriptModify(script))
+            {
+                scriptListBox.Items.Add(script);
+                UpdateScripts();
+            }
+        }
+
+        private void UpdateScripts()
+        {
             if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
-                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job).Scripts = scriptListBox.Items.Cast<ProgramConfiguration.Script>().Select((script) => script.ID).ToArray();
+            {
+                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job).Scripts = scriptListBox.Items.Cast<ProgramConfiguration.Script>().Select((item) => item.ID).ToArray();
+
+                configuration.Scripts = scriptListBox.Items.Cast<ProgramConfiguration.Script>().ToArray();
+            }
+        }
+
+        private void UpdateKeys()
+        {
+            if (jobListBox.SelectedIndex >= 0 && jobListBox.SelectedIndex < jobListBox.Items.Count)
+            {
+                (jobListBox.Items[jobListBox.SelectedIndex] as ProgramConfiguration.Target.Job).Keys = keyListBox.Items.Cast<ProgramConfiguration.Key>().Select((item) => item.ID).ToArray();
+
+                configuration.Keys = keyListBox.Items.Cast<ProgramConfiguration.Key>().ToArray();
+            }
         }
     }
 }
