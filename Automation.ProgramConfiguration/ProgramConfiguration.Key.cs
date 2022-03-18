@@ -18,7 +18,7 @@ namespace Automation.Configuration
             public string Name { get; set; }
 
             [XmlAttribute("category")]
-            public string Category { get; set; }
+            public KeyCategory Category { get; set; }
 
             [XmlAttribute("src")]
             public string Source { get; set; }
@@ -33,6 +33,8 @@ namespace Automation.Configuration
             {
                 return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
             }
+
+            public enum KeyCategory { API, SSH}
         }
     }
 }
