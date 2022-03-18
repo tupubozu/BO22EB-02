@@ -9,555 +9,192 @@
     [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false, ElementName = "ProgramConfiguration")]
     public partial class ProgramConfiguration
     {
+        public ConfigurationMetadata Metadata { get; set; }
 
-        private ProgramConfigurationMetadata metadataField;
-
-        private ProgramConfigurationOutput[] optionsField;
-
-        private ProgramConfigurationTarget[] workField;
-
-        private ProgramConfigurationKey[] keysField;
-
-        private ProgramConfigurationScript[] scriptsField;
-
-        /// <remarks/>
-        public ProgramConfigurationMetadata Metadata
-        {
-            get
-            {
-                return this.metadataField;
-            }
-            set
-            {
-                this.metadataField = value;
-            }
-        }
-
-        /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Output", IsNullable = false)]
-        public ProgramConfigurationOutput[] Options
-        {
-            get
-            {
-                return this.optionsField;
-            }
-            set
-            {
-                this.optionsField = value;
-            }
-        }
+        public Output[] Options { get; set; }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Target", IsNullable = false)]
-        public ProgramConfigurationTarget[] Work
-        {
-            get
-            {
-                return this.workField;
-            }
-            set
-            {
-                this.workField = value;
-            }
-        }
+        public Target[] Work { get; set; }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Key", IsNullable = false)]
-        public ProgramConfigurationKey[] Keys
-        {
-            get
-            {
-                return this.keysField;
-            }
-            set
-            {
-                this.keysField = value;
-            }
-        }
+        public Key[] Keys { get; set; }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Script", IsNullable = false)]
-        public ProgramConfigurationScript[] Scripts
+        public Script[] Scripts { get; set; }
+
+        public static bool TryParse(System.IO.Stream stream, out ProgramConfiguration config)
         {
-            get
+            try
             {
-                return this.scriptsField;
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
+                config = serializer.Deserialize(stream) as ProgramConfiguration;
+                return true;
             }
-            set
+            catch (System.Exception)
             {
-                this.scriptsField = value;
+                config = null;
+                return false;
+            }
+        }
+
+        public static ProgramConfiguration Parse(System.IO.Stream stream)
+        {
+            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(ProgramConfiguration));
+            return serializer.Deserialize(stream) as ProgramConfiguration;
+        }
+
+        public override string ToString()
+        {
+            return Metadata is null ? base.ToString() : $"Configuration {Metadata.Title}";
+        }
+
+
+        [System.SerializableAttribute()]
+        [System.ComponentModel.DesignerCategoryAttribute("code")]
+        [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+        public class ConfigurationMetadata
+        {
+            public string Title { get; set; }
+        
+            public string Description { get; set; }
+        
+            public System.DateTime Revision { get; set; }
+
+            public MetadataAuthor Author { get; set; }
+
+            [System.SerializableAttribute()]
+            [System.ComponentModel.DesignerCategoryAttribute("code")]
+            [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+            public partial class MetadataAuthor
+            {
+                public string Name { get; set; }
+                
+                public string Email { get; set; }
+            }
+        }
+
+        /// <remarks/>
+        [System.SerializableAttribute()]
+        [System.ComponentModel.DesignerCategoryAttribute("code")]
+        [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+        public class Output
+        {
+            [System.Xml.Serialization.XmlAttributeAttribute("category")]
+            public OutputCategory Category { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("address")]
+            public string Address { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("password")]
+            public bool Password { get; set; }
+
+            public enum OutputCategory { File, Email, Console }
+
+        }
+
+        [System.SerializableAttribute()]
+        [System.ComponentModel.DesignerCategoryAttribute("code")]
+        [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+        public class Target
+        {
+            [System.Xml.Serialization.XmlElementAttribute("Job")]
+            public Job[] Jobs { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("host")]
+            public string Host { get; set; }
+
+            public override string ToString()
+            {
+                return string.IsNullOrEmpty(Host) ? base.ToString() : Host;
+            }
+
+
+            /// <remarks/>
+            [System.SerializableAttribute()]
+            [System.ComponentModel.DesignerCategoryAttribute("code")]
+            [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+            public class Job
+            {
+                [System.Xml.Serialization.XmlAttributeAttribute("name")]
+                public string Name { get; set; }
+
+                [System.Xml.Serialization.XmlAttributeAttribute("category")]
+                public JobCategory Category { get; set; }
+
+                [System.Xml.Serialization.XmlAttributeAttribute("port")]
+                public ushort Port { get; set; }
+
+                [System.Xml.Serialization.XmlAttributeAttribute("keys")]
+                public byte[] Keys { get; set; }
+
+                [System.Xml.Serialization.XmlAttributeAttribute("scripts")]
+                public ushort[] Scripts { get; set; }
+
+                public override string ToString()
+                {
+                    return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
+                }
+
+                public enum JobCategory { McAfee, Acronis, vCenter, Custom }
+            }
+
+        }
+
+        [System.SerializableAttribute()]
+        [System.ComponentModel.DesignerCategoryAttribute("code")]
+        [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+        public class Key
+        {
+            [System.Xml.Serialization.XmlAttributeAttribute("id")]
+            public byte ID { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("name")]
+            public string Name { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("category")]
+            public string Category { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("src")]
+            public string Source { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("user")]
+            public string User { get; set; }
+
+            [System.Xml.Serialization.XmlTextAttribute()]
+            public string Value { get; set; }
+
+            public override string ToString()
+            {
+                return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
+            }
+        }
+
+        [System.SerializableAttribute()]
+        [System.ComponentModel.DesignerCategoryAttribute("code")]
+        [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+        public class Script
+        {
+            [System.Xml.Serialization.XmlAttributeAttribute("id")]
+            public ushort ID { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("name")]
+            public string Name { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("src")]
+            public string Source { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("key")]
+            public string Key { get; set; }
+
+            [System.Xml.Serialization.XmlAttributeAttribute("iv")]
+            public string IV { get; set; }
+
+            public override string ToString()
+            {
+                return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
             }
         }
     }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationMetadata
-    {
-
-        private string titleField;
-
-        private string descriptionField;
-
-        private System.DateTime revisionField;
-
-        private ProgramConfigurationMetadataAuthor authorField;
-
-        /// <remarks/>
-        public string Title
-        {
-            get
-            {
-                return this.titleField;
-            }
-            set
-            {
-                this.titleField = value;
-            }
-        }
-
-        /// <remarks/>
-        public string Description
-        {
-            get
-            {
-                return this.descriptionField;
-            }
-            set
-            {
-                this.descriptionField = value;
-            }
-        }
-
-        /// <remarks/>
-        public System.DateTime Revision
-        {
-            get
-            {
-                return this.revisionField;
-            }
-            set
-            {
-                this.revisionField = value;
-            }
-        }
-
-        /// <remarks/>
-        public ProgramConfigurationMetadataAuthor Author
-        {
-            get
-            {
-                return this.authorField;
-            }
-            set
-            {
-                this.authorField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationMetadataAuthor
-    {
-
-        private string nameField;
-
-        private string emailField;
-
-        /// <remarks/>
-        public string Name
-        {
-            get
-            {
-                return this.nameField;
-            }
-            set
-            {
-                this.nameField = value;
-            }
-        }
-
-        /// <remarks/>
-        public string Email
-        {
-            get
-            {
-                return this.emailField;
-            }
-            set
-            {
-                this.emailField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationOutput
-    {
-
-        private ProgramConfigurationOutputCategory categoryField;
-
-        private string addressField;
-
-        private bool passwordField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("category")]
-        public ProgramConfigurationOutputCategory Category
-        {
-            get
-            {
-                return this.categoryField;
-            }
-            set
-            {
-                this.categoryField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("address")]
-        public string Address
-        {
-            get
-            {
-                return this.addressField;
-            }
-            set
-            {
-                this.addressField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("password")]
-        public bool Password
-        {
-            get
-            {
-                return this.passwordField;
-            }
-            set
-            {
-                this.passwordField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationTarget
-    {
-
-        private ProgramConfigurationTargetJob[] jobField;
-
-        private string hostField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("Job")]
-        public ProgramConfigurationTargetJob[] Job
-        {
-            get
-            {
-                return this.jobField;
-            }
-            set
-            {
-                this.jobField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("host")]
-        public string Host
-        {
-            get
-            {
-                return this.hostField;
-            }
-            set
-            {
-                this.hostField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationTargetJob
-    {
-
-        private ProgramConfigurationTargetJobCategory categoryField;
-
-        private ushort portField;
-
-        private byte[] keyField;
-
-        private ushort[] scriptsField;
-
-        [System.Xml.Serialization.XmlAttributeAttribute("name")]
-        public string Name { get; set; }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("category")]
-        public ProgramConfigurationTargetJobCategory Category
-        {
-            get
-            {
-                return this.categoryField;
-            }
-            set
-            {
-                this.categoryField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("port")]
-        public ushort Port
-        {
-            get
-            {
-                return this.portField;
-            }
-            set
-            {
-                this.portField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("keys")]
-        public byte[] Keys
-        {
-            get
-            {
-                return this.keyField;
-            }
-            set
-            {
-                this.keyField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("scripts")]
-        public ushort[] Scripts
-        {
-            get
-            {
-                return this.scriptsField;
-            }
-            set
-            {
-                this.scriptsField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationKey
-    {
-
-        private byte idField;
-
-        private string nameField;
-
-        private string categoryField;
-
-        private string srcField;
-
-        private string userField;
-
-        private string valueField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("id")]
-        public byte ID
-        {
-            get
-            {
-                return this.idField;
-            }
-            set
-            {
-                this.idField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("name")]
-        public string Name
-        {
-            get
-            {
-                return this.nameField;
-            }
-            set
-            {
-                this.nameField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("category")]
-        public string Category
-        {
-            get
-            {
-                return this.categoryField;
-            }
-            set
-            {
-                this.categoryField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("src")]
-        public string Source
-        {
-            get
-            {
-                return this.srcField;
-            }
-            set
-            {
-                this.srcField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("user")]
-        public string User
-        {
-            get
-            {
-                return this.userField;
-            }
-            set
-            {
-                this.userField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlTextAttribute()]
-        public string Key
-        {
-            get
-            {
-                return this.valueField;
-            }
-            set
-            {
-                this.valueField = value;
-            }
-        }
-    }
-
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class ProgramConfigurationScript
-    {
-
-        private ushort idField;
-
-        private string nameField;
-
-        private string srcField;
-
-        private string keyField;
-
-        private string ivField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("id")]
-        public ushort ID
-        {
-            get
-            {
-                return this.idField;
-            }
-            set
-            {
-                this.idField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("name")]
-        public string Name
-        {
-            get
-            {
-                return this.nameField;
-            }
-            set
-            {
-                this.nameField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("src")]
-        public string Source
-        {
-            get
-            {
-                return this.srcField;
-            }
-            set
-            {
-                this.srcField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("key")]
-        public string Key
-        {
-            get
-            {
-                return this.keyField;
-            }
-            set
-            {
-                this.keyField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute("iv")]
-        public string IV
-        {
-            get
-            {
-                return this.ivField;
-            }
-            set
-            {
-                this.ivField = value;
-            }
-        }
-    }
-
 
 }
