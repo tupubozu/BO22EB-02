@@ -60,8 +60,8 @@ namespace Automation.CLI.Legacy
                     }
                 }
 
-                Log.Information("Read configuration \"{0}\" made by {1} ({2})", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email);
-                Console.WriteLine(config.Metadata.Description);
+                Log.Information("Read configuration \"{0}\" made by {1} ({2}) on {3:O}", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email,config.Metadata.Revision);
+                Console.WriteLine("Description: {0}",config.Metadata.Description);
             }
             catch (Exception ex)
             {
