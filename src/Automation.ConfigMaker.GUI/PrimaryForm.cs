@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Security.Cryptography;
-using System.Xml.Serialization;
-using System.IO.Compression;
-using System.IO;
 using Automation.Configuration;
-using Automation.Cryptography;
+using Automation.Core;
 
 namespace Automation.ConfigMaker.GUI
 {
@@ -28,7 +20,6 @@ namespace Automation.ConfigMaker.GUI
             ProgramConfiguration.Target.Job.JobCategory.vCenter,
             ProgramConfiguration.Target.Job.JobCategory.Custom
         };
-
 
         private ProgramConfiguration configuration;
         private Dictionary<ushort, byte[]> ScriptDictionary;
@@ -84,79 +75,10 @@ namespace Automation.ConfigMaker.GUI
                     ScriptDictionary.Clear();
                     KeyDictionary.Clear();
 
-                    using (var zipConfig = new ZipArchive(openFileDialog.OpenFile(), ZipArchiveMode.Read, false, Encoding.UTF8))
-                    {
-                        using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
-                        using (var passwordHash = SHA256.Create())
-                        {
-                            using (var passwordForm = new AuthenticationForm())
-                            {
-                                if (passwordForm.ShowDialog() == DialogResult.OK)
-                                {
-                                    aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(passwordForm.Password)));
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Operation has been aborted");
-                                    return;
-                                }
-                            }
+                    var authForm = new AuthenticationForm();
+                    if (authForm.ShowDialog() != DialogResult.OK) return;
 
-                            var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
-
-                            using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                            using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
-                            {
-                                configuration = ProgramConfiguration.Parse(new MemoryStream(Encoding.UTF8.GetBytes(await reader.ReadToEndAsync())));
-                            }
-                        }
-
-                        if (!(configuration.Keys is null))
-                            foreach (var key in configuration.Keys)
-                            {
-                                switch (key.Category)
-                                {
-                                    case ProgramConfiguration.Key.KeyCategory.API:
-                                        KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(key.Value));
-                                        break;
-                                    case ProgramConfiguration.Key.KeyCategory.SSH:
-                                        using (var aesCrypto = Crypto.GetAes())
-                                        {
-                                            aesCrypto.IV = key.EncryptionIV;
-                                            aesCrypto.Key = key.EncryptionKey;
-
-                                            var encryptedConfig = zipConfig.GetEntry(key.Source);
-
-                                            using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                                            using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
-                                            {
-                                                KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
-                                            }
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-
-                        if (!(configuration.Scripts is null))
-                            foreach (var script in configuration.Scripts)
-                            {
-                                using (var aesCrypto = Crypto.GetAes())
-                                {
-                                    aesCrypto.IV = script.EncryptionIV;
-                                    aesCrypto.Key = script.EncryptionKey;
-
-                                    var encryptedConfig = zipConfig.GetEntry(script.Source);
-
-                                    using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                                    using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
-                                    {
-                                        ScriptDictionary.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
-                                    }
-                                }
-                            }
-                    }
+                    await ConfigCore.OpenConfigAsync(openFileDialog.OpenFile(), authForm.Password, configuration, ScriptDictionary, KeyDictionary);
 
                     ProgramConfiguration.Script.NextID = (ushort)((configuration?.Scripts?.Select((item) => item.ID)?.Max() + 1) ?? 0);
                     ProgramConfiguration.Key.NextID = (ushort)((configuration?.Keys?.Select((item) => item.ID)?.Max() + 1) ?? 0);
@@ -184,91 +106,15 @@ namespace Automation.ConfigMaker.GUI
             {
                 try
                 {
-                    using (var zipConfig = new ZipArchive(saveFileDialog.OpenFile(), ZipArchiveMode.Create, false, Encoding.UTF8))
-                    {
-                        toolStripProgressBar.Value = 0;
-                        toolStripStatusLabel.Text = "Writing keys to configuration file";
-                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration?.Keys?.Length ?? 100;
-                        if (!(configuration.Keys is null))
-                            foreach (var key in configuration.Keys)
-                            {
-                                if (key.Category == ProgramConfiguration.Key.KeyCategory.SSH)
-                                    using (var aesCrypto = Crypto.GetAes())
-                                    {
-                                        key.EncryptionIV = aesCrypto.IV;
-                                        key.EncryptionKey = aesCrypto.Key;
+                    var authForm = new AuthenticationForm();
+                    if (authForm.ShowDialog() != DialogResult.OK) return;
 
-                                        key.Source = $"k-{key.ID}.aes";
+                    toolStripProgressBar.Value = 0;
+                    toolStripStatusLabel.Text = "Writing configuration to file";
 
-                                        var encryptedConfig = zipConfig.CreateEntry(key.Source);
+                    await ConfigCore.SaveConfigAsync(saveFileDialog.OpenFile(), authForm.Password, configuration, ScriptDictionary, KeyDictionary);
 
-                                        using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
-                                        using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
-                                        {
-                                            await writer.WriteAsync(Encoding.UTF8.GetString(KeyDictionary[key.ID]));
-                                            await writer.FlushAsync();
-                                        }
-                                    }
-                                toolStripProgressBar.PerformStep();
-                            }
-
-                        toolStripProgressBar.Value = 0;
-                        toolStripStatusLabel.Text = "Writing scripts to configuration file";
-                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration?.Scripts?.Length ?? 100;
-                        if (!(configuration.Scripts is null))
-                            foreach (var script in configuration.Scripts)
-                            {
-                                using (var aesCrypto = Crypto.GetAes())
-                                {
-                                    script.EncryptionIV = aesCrypto.IV;
-                                    script.EncryptionKey = aesCrypto.Key;
-
-                                    script.Source = $"s-{script.ID}.aes";
-
-                                    var encryptedConfig = zipConfig.CreateEntry(script.Source);
-
-                                    using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
-                                    using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
-                                    {
-                                        await writer.WriteAsync(Encoding.UTF8.GetString(ScriptDictionary[script.ID]));
-                                        await writer.FlushAsync();
-                                    }
-                                }
-                                toolStripProgressBar.PerformStep();
-                            }
-
-                        toolStripProgressBar.Value = 0;
-                        toolStripStatusLabel.Text = "Writing XML data to configuration file";
-                        using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
-                        using (var passwordHash = SHA256.Create())
-                        {
-                            using (var passwordForm = new AuthenticationForm())
-                            {
-                                if (passwordForm.ShowDialog() == DialogResult.OK)
-                                {
-                                    aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(passwordForm.Password)));
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Operation has been aborted");
-                                    return;
-                                }
-                            }
-
-                            var encryptedConfig = zipConfig.CreateEntry("config.xml.aes", CompressionLevel.Optimal);
-
-                            using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
-                            using (var writer = new StreamWriter(cryptoConfigStream, Encoding.UTF8))
-                            {
-                                XmlSerializer serializer = new XmlSerializer(typeof(ProgramConfiguration));
-                                configuration.Metadata.Revision = DateTime.Now;
-                                revisionTextBox.Text = configuration.Metadata.Revision.ToString("O");
-                                serializer.Serialize(writer, configuration);
-                            }
-
-                        }
-                        toolStripProgressBar.Value = 100;
-                    }
+                    toolStripProgressBar.Value = 100;
                 }
                 catch (Exception ex)
                 {
