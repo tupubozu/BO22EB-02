@@ -15,8 +15,8 @@ namespace Automation.CLI
     internal static class Program
     {
         static ProgramConfiguration config;
-        static Dictionary<ushort, byte[]> ScriptDict = new Dictionary<ushort, byte[]>();
-        static Dictionary<ushort, byte[]> KeyDict = new Dictionary<ushort,byte[]>();
+        static readonly Dictionary<ushort, byte[]> ScriptDict = new Dictionary<ushort, byte[]>();
+        static readonly Dictionary<ushort, byte[]> KeyDict = new Dictionary<ushort,byte[]>();
 
         static async Task Main(string[] args)
         {

@@ -3,6 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.CLI", "src\Automation.CLI\Automation.CLI.csproj", "{484B42F2-24F1-4DAE-B263-B9310BB5C47B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.ConfigMaker.GUI", "src\Automation.ConfigMaker.GUI\Automation.ConfigMaker.GUI.csproj", "{C15E4872-0972-4DAD-ADD0-66789601AFA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation.Core", "src\Automation.Core\Automation.Core.csproj", "{991A565D-3F3F-4203-9942-DD11BEBF31E7}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiClient", "src\HttpApiClient\HttpApiClient.csproj", "{ABB28612-2383-4401-9426-5A7D81B495EE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "McAfeeApiClient", "src\McAfeeEpoClient\McAfeeApiClient.csproj", "{2C0ADB17-C6DB-45AA-8E66-592B41A14B13}"
@@ -14,12 +20,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.Configuration", "src\Automation.ProgramConfiguration\Automation.Configuration.csproj", "{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.Cryptography", "src\Automation.Cryptography\Automation.Cryptography.csproj", "{9167ACB3-17E1-4601-95C1-0AE012B87FD4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.CLI", "src\Automation.CLI\Automation.CLI.csproj", "{484B42F2-24F1-4DAE-B263-B9310BB5C47B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.ConfigMaker.GUI", "src\Automation.ConfigMaker.GUI\Automation.ConfigMaker.GUI.csproj", "{C15E4872-0972-4DAD-ADD0-66789601AFA8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation.Core", "Automation.Core\Automation.Core.csproj", "{991A565D-3F3F-4203-9942-DD11BEBF31E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
