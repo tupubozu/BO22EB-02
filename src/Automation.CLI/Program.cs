@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Automation.Configuration;
 using Automation.Cryptography;
 using Renci.SshNet;
 using Serilog;
 using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
 using Automation.Core;
 
 namespace Automation.CLI
 {
     internal static class Program
     {
-        static ProgramConfiguration config = new ProgramConfiguration();
+        static ProgramConfiguration config;
         static Dictionary<ushort, byte[]> ScriptDict = new Dictionary<ushort, byte[]>();
         static Dictionary<ushort, byte[]> KeyDict = new Dictionary<ushort,byte[]>();
 
@@ -38,11 +35,12 @@ namespace Automation.CLI
                 Log.Fatal("No file exist at \"{0}\"", args[0]);
                 return;
             }
-            string configArchivePath = Path.GetFullPath(args[0]);
-            Log.Information("Reading configuration from: \"{0}\"", configArchivePath);
-
+            
             try
             {
+                string configArchivePath = Path.GetFullPath(args[0]);
+                Log.Information("Reading configuration from: \"{0}\"", configArchivePath);
+
                 Console.Write("Password: ");
                 var password = Console.ReadLine();
 

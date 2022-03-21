@@ -13,6 +13,9 @@ namespace Automation.Core
 {
     public static class ConfigCore
     {
+        private static readonly string InitVectText = "I'm an engineer!";
+        private static readonly string XmlConfigZipEntryName = "config.xml.aes";
+
         public static async Task SaveConfigAsync(Stream stream, string password, ProgramConfiguration config, Dictionary<ushort, byte[]> scriptDict, Dictionary<ushort, byte[]> keyDict)
         {
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Create, true, Encoding.UTF8))
@@ -60,12 +63,12 @@ namespace Automation.Core
                         }
                     }
 
-                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
+                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes(InitVectText)))
                 using (var passwordHash = SHA256.Create())
                 {
                     aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(password)));
 
-                    var encryptedConfig = zipConfig.CreateEntry("config.xml.aes", CompressionLevel.Optimal);
+                    var encryptedConfig = zipConfig.CreateEntry(XmlConfigZipEntryName, CompressionLevel.Optimal);
 
                     using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                     using (var writer = new StreamWriter(cryptoConfigStream, Encoding.UTF8))
@@ -85,12 +88,12 @@ namespace Automation.Core
 
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, true, Encoding.UTF8))
             {
-                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
+                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes(InitVectText)))
                 using (var passwordHash = SHA256.Create())
                 {
                     aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(password)));
 
-                    var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
+                    var encryptedConfig = zipConfig.GetEntry(XmlConfigZipEntryName);
 
                     using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
                     using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
