@@ -78,7 +78,8 @@ namespace Automation.ConfigMaker.GUI
                     var authForm = new AuthenticationForm();
                     if (authForm.ShowDialog() != DialogResult.OK) return;
 
-                    await ConfigCore.OpenConfigAsync(openFileDialog.OpenFile(), authForm.Password, configuration, ScriptDictionary, KeyDictionary);
+                    using (var fileStream = openFileDialog.OpenFile())
+                        await ConfigCore.OpenConfigAsync(fileStream, authForm.Password, configuration, ScriptDictionary, KeyDictionary);
 
                     ProgramConfiguration.Script.NextID = (ushort)((configuration?.Scripts?.Select((item) => item.ID)?.Max() + 1) ?? 0);
                     ProgramConfiguration.Key.NextID = (ushort)((configuration?.Keys?.Select((item) => item.ID)?.Max() + 1) ?? 0);
@@ -111,8 +112,9 @@ namespace Automation.ConfigMaker.GUI
 
                     toolStripProgressBar.Value = 0;
                     toolStripStatusLabel.Text = "Writing configuration to file";
-
-                    await ConfigCore.SaveConfigAsync(saveFileDialog.OpenFile(), authForm.Password, configuration, ScriptDictionary, KeyDictionary);
+                    
+                    using (var fileStream = saveFileDialog.OpenFile())
+                        await ConfigCore.SaveConfigAsync(fileStream, authForm.Password, configuration, ScriptDictionary, KeyDictionary);
 
                     toolStripProgressBar.Value = 100;
                 }

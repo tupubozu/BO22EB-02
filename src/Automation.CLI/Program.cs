@@ -11,13 +11,17 @@ using Serilog;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using Automation.Core;
 
 namespace Automation.CLI
 {
     internal static class Program
     {
-        static ProgramConfiguration config;
-        static void Main(string[] args)
+        static ProgramConfiguration config = new ProgramConfiguration();
+        static Dictionary<ushort, byte[]> ScriptDict = new Dictionary<ushort, byte[]>();
+        static Dictionary<ushort, byte[]> KeyDict = new Dictionary<ushort,byte[]>();
+
+        static async Task Main(string[] args)
         {
             InitializeLog();
             Log.Information("Starting program");
@@ -25,10 +29,6 @@ namespace Automation.CLI
             if (args.Length == 0)
             {
                 Log.Fatal("No arguments provided");
-                Log.Information("Exiting");
-#if DEBUG
-                Console.ReadKey(true);
-#endif
                 return;
             }
 
@@ -36,7 +36,6 @@ namespace Automation.CLI
             if (!File.Exists(args[0]))
             {
                 Log.Fatal("No file exist at \"{0}\"", args[0]);
-                Log.Information("Exiting");
                 return;
             }
             string configArchivePath = Path.GetFullPath(args[0]);
@@ -44,21 +43,11 @@ namespace Automation.CLI
 
             try
             {
-                using (var configArchiveStream = File.Open(configArchivePath, FileMode.Open, FileAccess.Read))
-                using (var zipConfig = new ZipArchive(configArchiveStream, ZipArchiveMode.Read, true, Encoding.UTF8))
-                using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
-                using (var passwordHash = SHA256.Create())
-                {
-                    Console.Write("Password: ");
-                    aesCrypto.Key = passwordHash.ComputeHash(new MemoryStream(Encoding.UTF8.GetBytes(Console.ReadLine())));
+                Console.Write("Password: ");
+                var password = Console.ReadLine();
 
-                    var encryptedConfig = zipConfig.GetEntry("config.xml.aes");
-
-                    using (CryptoStream cryptoConfigStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                    {
-                        config = ProgramConfiguration.Parse(cryptoConfigStream);
-                    }
-                }
+                using (var fileStream = File.OpenRead(configArchivePath))
+                    await ConfigCore.OpenConfigAsync(fileStream, password, config, ScriptDict, KeyDict);
 
                 Log.Information("Read configuration \"{0}\" made by {1} ({2}) on {3:O}", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email,config.Metadata.Revision);
                 Console.WriteLine("Description: {0}",config.Metadata.Description);
@@ -66,10 +55,21 @@ namespace Automation.CLI
             catch (Exception ex)
             {
                 Log.Debug("Exception: {0}", ex);
-                Log.Error("Exception: {0}", ex.Message);
                 Log.Fatal("Error encountered while reading configuration: {0}: {1}", ex.GetType().FullName, ex.Message);
                 return;
             }
+
+            if (config.Work is null)
+            {
+                Log.Error("No targets provided in configuration");
+                return;
+            }
+
+            if (config.Keys is null || config.Keys.Length == 0)
+                Log.Warning("No keys provided in configuration");
+
+            if (config.Scripts is null || config.Scripts.Length == 0)
+                Log.Information("No scripts provided in configuration");
 
             Log.Information("Exiting");
 #if DEBUG
@@ -83,9 +83,10 @@ namespace Automation.CLI
 #if DEBUG
                 .WriteTo.Console(Serilog.Events.LogEventLevel.Verbose)
 #else
-				.WriteTo.Console(Serilog.Events.LogEventLevel.Information)
-				.WriteTo.Console(Serilog.Events.LogEventLevel.Warning)
-				.WriteTo.Console(Serilog.Events.LogEventLevel.Error)
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Warning)
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Error)
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Fatal)
 #endif
                 .Enrich.FromLogContext()
                 .MinimumLevel.Debug();

@@ -15,7 +15,7 @@ namespace Automation.Core
     {
         public static async Task SaveConfigAsync(Stream stream, string password, ProgramConfiguration config, Dictionary<ushort, byte[]> scriptDict, Dictionary<ushort, byte[]> keyDict)
         {
-            using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Create, false, Encoding.UTF8))
+            using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Create, true, Encoding.UTF8))
             {
                 if (!(config.Keys is null))
                     foreach (var key in config.Keys)
@@ -83,7 +83,7 @@ namespace Automation.Core
         public static async Task OpenConfigAsync(Stream stream, string password, ProgramConfiguration config, Dictionary<ushort, byte[]> scriptDict, Dictionary<ushort, byte[]> keyDict)
         {
 
-            using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, false, Encoding.UTF8))
+            using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, true, Encoding.UTF8))
             {
                 using (var aesCrypto = Crypto.GetAes(Encoding.UTF8.GetBytes("I'm an engineer!")))
                 using (var passwordHash = SHA256.Create())
