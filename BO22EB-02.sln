@@ -11,11 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcronisApiClient", "src\Acr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCenterApiClient", "src\VCenterApiClient\VCenterApiClient.csproj", "{3328BED1-4D01-4929-B08F-E361DC115778}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation.CLI.Legacy", "src\Automation.CLI.Legacy\Automation.CLI.Legacy.csproj", "{2CCF3FA4-A5F1-499E-A926-3BF6D22B1FDC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.Configuration", "src\Automation.ProgramConfiguration\Automation.Configuration.csproj", "{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation.ConfigMaker.GUI.Legacy", "src\Automation.ConfigMaker.GUI.Legacy\Automation.ConfigMaker.GUI.Legacy.csproj", "{DED10773-664C-488C-A973-7ADFFEEBB6CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.Cryptography", "src\Automation.Cryptography\Automation.Cryptography.csproj", "{9167ACB3-17E1-4601-95C1-0AE012B87FD4}"
 EndProject
@@ -45,18 +41,10 @@ Global
 		{3328BED1-4D01-4929-B08F-E361DC115778}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3328BED1-4D01-4929-B08F-E361DC115778}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3328BED1-4D01-4929-B08F-E361DC115778}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2CCF3FA4-A5F1-499E-A926-3BF6D22B1FDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2CCF3FA4-A5F1-499E-A926-3BF6D22B1FDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2CCF3FA4-A5F1-499E-A926-3BF6D22B1FDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2CCF3FA4-A5F1-499E-A926-3BF6D22B1FDC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DED10773-664C-488C-A973-7ADFFEEBB6CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DED10773-664C-488C-A973-7ADFFEEBB6CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DED10773-664C-488C-A973-7ADFFEEBB6CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DED10773-664C-488C-A973-7ADFFEEBB6CF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9167ACB3-17E1-4601-95C1-0AE012B87FD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9167ACB3-17E1-4601-95C1-0AE012B87FD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9167ACB3-17E1-4601-95C1-0AE012B87FD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
