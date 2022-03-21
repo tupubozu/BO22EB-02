@@ -82,7 +82,7 @@ namespace Automation.ConfigMaker.GUI
                 try
                 {
                     ScriptDictionary.Clear();
-                    KeyDictionary.Clear(); 
+                    KeyDictionary.Clear();
 
                     using (var zipConfig = new ZipArchive(openFileDialog.OpenFile(), ZipArchiveMode.Read, false, Encoding.UTF8))
                     {
@@ -111,53 +111,55 @@ namespace Automation.ConfigMaker.GUI
                             }
                         }
 
-                        foreach (var key in configuration.Keys)
-                        {
-                            switch (key.Category)
+                        if (!(configuration.Keys is null))
+                            foreach (var key in configuration.Keys)
                             {
-                                case ProgramConfiguration.Key.KeyCategory.API:
-                                    KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(key.Value));
-                                    break;
-                                case ProgramConfiguration.Key.KeyCategory.SSH:
-                                    using (var aesCrypto = Crypto.GetAes())
-                                    {
-                                        aesCrypto.IV = key.EncryptionIV;
-                                        aesCrypto.Key = key.EncryptionKey;
-
-                                        var encryptedConfig = zipConfig.GetEntry(key.Source);
-
-                                        using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                                        using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
-                                        {
-                                            KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
-                                        }
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-
-                        foreach (var script in configuration.Scripts)
-                        {
-                            using (var aesCrypto = Crypto.GetAes())
-                            {
-                                aesCrypto.IV = script.EncryptionIV;
-                                aesCrypto.Key = script.EncryptionKey;
-
-                                var encryptedConfig = zipConfig.GetEntry(script.Source);
-
-                                using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
-                                using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
+                                switch (key.Category)
                                 {
-                                    ScriptDictionary.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                    case ProgramConfiguration.Key.KeyCategory.API:
+                                        KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(key.Value));
+                                        break;
+                                    case ProgramConfiguration.Key.KeyCategory.SSH:
+                                        using (var aesCrypto = Crypto.GetAes())
+                                        {
+                                            aesCrypto.IV = key.EncryptionIV;
+                                            aesCrypto.Key = key.EncryptionKey;
+
+                                            var encryptedConfig = zipConfig.GetEntry(key.Source);
+
+                                            using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
+                                            using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
+                                            {
+                                                KeyDictionary.Add(key.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                            }
+                                        }
+                                        break;
+                                    default:
+                                        break;
                                 }
                             }
-                        }
+
+                        if (!(configuration.Scripts is null))
+                            foreach (var script in configuration.Scripts)
+                            {
+                                using (var aesCrypto = Crypto.GetAes())
+                                {
+                                    aesCrypto.IV = script.EncryptionIV;
+                                    aesCrypto.Key = script.EncryptionKey;
+
+                                    var encryptedConfig = zipConfig.GetEntry(script.Source);
+
+                                    using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
+                                    using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
+                                    {
+                                        ScriptDictionary.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                    }
+                                }
+                            }
                     }
 
-                    ProgramConfiguration.Script.NextID = (ushort)(configuration.Scripts.Select((item) => item.ID).Max() + 1);
-                    ProgramConfiguration.Key.NextID = (ushort)(configuration.Keys.Select((item) => item.ID).Max() + 1);
+                    ProgramConfiguration.Script.NextID = (ushort)((configuration?.Scripts?.Select((item) => item.ID)?.Max() + 1) ?? 0);
+                    ProgramConfiguration.Key.NextID = (ushort)((configuration?.Keys?.Select((item) => item.ID)?.Max() + 1) ?? 0);
 
                     titleTextBox.Text = configuration.Metadata.Title;
                     revisionTextBox.Text = configuration.Metadata.Revision.ToString("O");
@@ -166,11 +168,12 @@ namespace Automation.ConfigMaker.GUI
                     authorEmailTextBox.Text = configuration.Metadata.Author.Email;
 
                     hostListBox.Items.Clear();
-                    hostListBox.Items.AddRange(configuration.Work);
+                    if (!(configuration.Work is null))
+                        hostListBox.Items.AddRange(configuration.Work);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "ERROR");
+                    MessageBox.Show(ex.ToString(), ex.GetType().FullName);
                 }
             }
         }
@@ -185,52 +188,54 @@ namespace Automation.ConfigMaker.GUI
                     {
                         toolStripProgressBar.Value = 0;
                         toolStripStatusLabel.Text = "Writing keys to configuration file";
-                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration.Keys.Length;
-                        foreach (var key in configuration.Keys)
-                        {
-                            if (key.Category == ProgramConfiguration.Key.KeyCategory.SSH)
+                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration?.Keys?.Length ?? 100;
+                        if (!(configuration.Keys is null))
+                            foreach (var key in configuration.Keys)
+                            {
+                                if (key.Category == ProgramConfiguration.Key.KeyCategory.SSH)
+                                    using (var aesCrypto = Crypto.GetAes())
+                                    {
+                                        key.EncryptionIV = aesCrypto.IV;
+                                        key.EncryptionKey = aesCrypto.Key;
+
+                                        key.Source = $"k-{key.ID}.aes";
+
+                                        var encryptedConfig = zipConfig.CreateEntry(key.Source);
+
+                                        using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
+                                        using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
+                                        {
+                                            await writer.WriteAsync(Encoding.UTF8.GetString(KeyDictionary[key.ID]));
+                                            await writer.FlushAsync();
+                                        }
+                                    }
+                                toolStripProgressBar.PerformStep();
+                            }
+
+                        toolStripProgressBar.Value = 0;
+                        toolStripStatusLabel.Text = "Writing scripts to configuration file";
+                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration?.Scripts?.Length ?? 100;
+                        if (!(configuration.Scripts is null))
+                            foreach (var script in configuration.Scripts)
+                            {
                                 using (var aesCrypto = Crypto.GetAes())
                                 {
-                                    key.EncryptionIV = aesCrypto.IV;
-                                    key.EncryptionKey = aesCrypto.Key;
+                                    script.EncryptionIV = aesCrypto.IV;
+                                    script.EncryptionKey = aesCrypto.Key;
 
-                                    key.Source = $"k-{key.ID}.aes";
+                                    script.Source = $"s-{script.ID}.aes";
 
-                                    var encryptedConfig = zipConfig.CreateEntry(key.Source);
+                                    var encryptedConfig = zipConfig.CreateEntry(script.Source);
 
                                     using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                                     using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
                                     {
-                                        await writer.WriteAsync(Encoding.UTF8.GetString(KeyDictionary[key.ID]));
+                                        await writer.WriteAsync(Encoding.UTF8.GetString(ScriptDictionary[script.ID]));
                                         await writer.FlushAsync();
                                     }
                                 }
-                            toolStripProgressBar.PerformStep();
-                        }
-
-                        toolStripProgressBar.Value = 0;
-                        toolStripStatusLabel.Text = "Writing scripts to configuration file";
-                        toolStripProgressBar.Step = toolStripProgressBar.Maximum / configuration.Scripts.Length;
-                        foreach (var script in configuration.Scripts)
-                        {
-                            using (var aesCrypto = Crypto.GetAes())
-                            {
-                                script.EncryptionIV = aesCrypto.IV;
-                                script.EncryptionKey = aesCrypto.Key;
-
-                                script.Source = $"s-{script.ID}.aes";
-
-                                var encryptedConfig = zipConfig.CreateEntry(script.Source);
-
-                                using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
-                                using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
-                                {
-                                    await writer.WriteAsync(Encoding.UTF8.GetString(ScriptDictionary[script.ID]));
-                                    await writer.FlushAsync();
-                                }
+                                toolStripProgressBar.PerformStep();
                             }
-                            toolStripProgressBar.PerformStep();
-                        }
 
                         toolStripProgressBar.Value = 0;
                         toolStripStatusLabel.Text = "Writing XML data to configuration file";
@@ -267,9 +272,9 @@ namespace Automation.ConfigMaker.GUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "ERROR");
+                    MessageBox.Show(ex.ToString(), ex.GetType().FullName);
                     toolStripProgressBar.Value = 0;
-                    toolStripStatusLabel.Text = ex.Message;
+                    toolStripStatusLabel.Text = $"Error: {ex.Message}";
                 }
             }
         }
