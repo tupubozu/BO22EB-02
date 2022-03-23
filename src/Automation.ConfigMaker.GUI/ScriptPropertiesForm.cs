@@ -24,7 +24,7 @@ namespace Automation.ConfigMaker.GUI
             scriptNameTextBox.Text = script?.Name;
             scriptSourceTextBox.Text = script?.Source;
             
-            fileBrowseButton.Enabled = script?.Source?.Contains('#') ?? true;
+            fileBrowseButton.Enabled = script?.Source?.Contains("#") ?? true;
         }
 
         private void okButton_Click(object sender, EventArgs e)

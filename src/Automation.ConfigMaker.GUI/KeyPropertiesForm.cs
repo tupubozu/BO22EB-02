@@ -37,7 +37,7 @@ namespace Automation.ConfigMaker.GUI
                     break;
             }
 
-            fileBrowseButton.Enabled = key?.Source?.Contains('#') ?? true;
+            fileBrowseButton.Enabled = key?.Source?.Contains("#") ?? true;
         }
 
         private void okButton_Click(object sender, EventArgs e)
