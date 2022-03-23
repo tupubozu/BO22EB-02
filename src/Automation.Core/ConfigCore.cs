@@ -29,7 +29,7 @@ namespace Automation.Core
                                 key.EncryptionIV = aesCrypto.IV;
                                 key.EncryptionKey = aesCrypto.Key;
 
-                                key.Source = $"k-{key.ID}.aes";
+                                key.Source = $"k#{key.ID}.aes";
 
                                 var encryptedConfig = zipConfig.CreateEntry(key.Source);
 
@@ -50,7 +50,7 @@ namespace Automation.Core
                             script.EncryptionIV = aesCrypto.IV;
                             script.EncryptionKey = aesCrypto.Key;
 
-                            script.Source = $"s-{script.ID}.aes";
+                            script.Source = $"s#{script.ID}.aes";
 
                             var encryptedConfig = zipConfig.CreateEntry(script.Source);
 
