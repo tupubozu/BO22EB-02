@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Automation.Configuration;
-using Automation.Cryptography;
+using ReGen.Configuration;
+using ReGen.Cryptography;
 using Renci.SshNet;
 using Serilog;
 using System.IO;
-using Automation.Core;
+using ReGen.Core;
 
-namespace Automation.CLI
+namespace ReGen.CLI
 {
     internal static class Program
     {

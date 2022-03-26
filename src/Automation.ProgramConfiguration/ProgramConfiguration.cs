@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace Automation.Configuration
+namespace ReGen.Configuration
 {
     [Serializable()]
     [DesignerCategory("code")]

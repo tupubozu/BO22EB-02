@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Automation.CLI
+namespace ReGen.CLI
 {
     /// <summary>
     /// Class containing control flags

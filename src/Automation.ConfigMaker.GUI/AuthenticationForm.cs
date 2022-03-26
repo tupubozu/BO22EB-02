@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Automation.ConfigMaker.GUI
+namespace ReGen.ConfigMaker.GUI
 {
     public partial class AuthenticationForm : Form
     {

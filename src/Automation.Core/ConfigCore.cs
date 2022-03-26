@@ -1,5 +1,5 @@
-﻿using Automation.Configuration;
-using Automation.Cryptography;
+﻿using ReGen.Configuration;
+using ReGen.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace Automation.Core
+namespace ReGen.Core
 {
     public static class ConfigCore
     {

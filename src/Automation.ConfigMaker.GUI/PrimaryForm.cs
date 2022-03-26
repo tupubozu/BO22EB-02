@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Windows.Forms;
-using Automation.Configuration;
-using Automation.Core;
+using ReGen.Configuration;
+using ReGen.Core;
 
-namespace Automation.ConfigMaker.GUI
+namespace ReGen.ConfigMaker.GUI
 {
     public partial class PrimaryForm : Form
     {

@@ -2,9 +2,9 @@
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using Automation.Configuration;
+using ReGen.Configuration;
 
-namespace Automation.ConfigMaker.GUI
+namespace ReGen.ConfigMaker.GUI
 {
     public partial class KeyPropertiesForm : Form
     {

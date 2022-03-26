@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Automation.Configuration
+namespace ReGen.Configuration
 {
     public partial class ProgramConfiguration
     {

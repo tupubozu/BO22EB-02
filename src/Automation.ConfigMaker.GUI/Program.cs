@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Automation.ConfigMaker.GUI
+namespace ReGen.ConfigMaker.GUI
 {
     internal static class Program
     {

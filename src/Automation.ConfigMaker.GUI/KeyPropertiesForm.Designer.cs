@@ -1,4 +1,4 @@
-﻿namespace Automation.ConfigMaker.GUI
+﻿namespace ReGen.ConfigMaker.GUI
 {
     partial class KeyPropertiesForm
     {

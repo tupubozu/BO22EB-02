@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Automation.Cryptography
+namespace ReGen.Cryptography
 {
     public static class Crypto
     {
