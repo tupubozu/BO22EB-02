@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.CLI", "src\Automation.CLI\ReGen.CLI.csproj", "{484B42F2-24F1-4DAE-B263-B9310BB5C47B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.CLI", "src\ReGen.CLI\ReGen.CLI.csproj", "{484B42F2-24F1-4DAE-B263-B9310BB5C47B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.ConfigMaker.GUI", "src\Automation.ConfigMaker.GUI\ReGen.ConfigMaker.GUI.csproj", "{C15E4872-0972-4DAD-ADD0-66789601AFA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.ConfigMaker.GUI", "src\ReGen.ConfigMaker.GUI\ReGen.ConfigMaker.GUI.csproj", "{C15E4872-0972-4DAD-ADD0-66789601AFA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Core", "src\Automation.Core\ReGen.Core.csproj", "{991A565D-3F3F-4203-9942-DD11BEBF31E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Core", "src\ReGen.Core\ReGen.Core.csproj", "{991A565D-3F3F-4203-9942-DD11BEBF31E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiClient", "src\HttpApiClient\HttpApiClient.csproj", "{ABB28612-2383-4401-9426-5A7D81B495EE}"
 EndProject
@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcronisApiClient", "src\Acr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCenterApiClient", "src\VCenterApiClient\VCenterApiClient.csproj", "{3328BED1-4D01-4929-B08F-E361DC115778}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Configuration", "src\Automation.ProgramConfiguration\ReGen.Configuration.csproj", "{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Configuration", "src\ReGen.ProgramConfiguration\ReGen.Configuration.csproj", "{F89EB9C9-5ECD-4CDF-A48E-09DE520DF4F0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Cryptography", "src\Automation.Cryptography\ReGen.Cryptography.csproj", "{9167ACB3-17E1-4601-95C1-0AE012B87FD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReGen.Cryptography", "src\ReGen.Cryptography\ReGen.Cryptography.csproj", "{9167ACB3-17E1-4601-95C1-0AE012B87FD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
