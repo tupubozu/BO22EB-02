@@ -69,6 +69,8 @@ namespace Automation.CLI
             if (config.Scripts is null || config.Scripts.Length == 0)
                 Log.Information("No scripts provided in configuration");
 
+            var results = await config.Work.Execute();
+
             Log.Information("Exiting");
 #if DEBUG
             Console.ReadKey(true);
@@ -91,5 +93,71 @@ namespace Automation.CLI
 
             Log.Logger = logConfig.CreateLogger();
         }
+
+        static async Task<JobResult[]> Execute (this ProgramConfiguration.Target[] Work)
+        {
+            List<JobResult> results = new List<JobResult>();
+
+            foreach (var target in Work)
+            {
+                var categories = target.Jobs.Select((item) => item.Category);
+                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
+                {
+                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Custom);
+                    foreach (var job in jobs)
+                    {
+                        using (var client = new SshClient(
+                            host: target.Host,
+                            username: config.Keys
+                                .Where(item => job.Keys.Contains(item.ID))
+                                .Select(key => key.User)
+                                .First(),
+                            port: (int)job.Port,
+                            keyFiles: KeyDict
+                                .Where(item => job.Keys.Contains(item.Key))
+                                .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
+                                .ToArray()
+                                ))
+                        {
+                            var commands = ScriptDict
+                                .Where(item => job.Scripts.Contains(item.Key))
+                                .Select(item => (client.CreateCommand(Encoding.UTF8.GetString(item.Value)), item.Key)).ToArray();
+
+                            var commandOutput = commands.Select(async (item) => await Task.Run(() => item.Item1.Execute()));
+                            var res = commands.Select((item) => item.Item1.ExitStatus).ToArray();
+                            commands.Select((item) => { item.Item1.Dispose(); return true; });
+                            
+                        }
+                    }
+                }
+                
+                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.McAfee))
+                {
+                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.McAfee);
+
+                }
+
+                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Acronis))
+                {
+                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Acronis);
+
+                }
+
+                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.vCenter))
+                {
+                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.vCenter);
+
+                }
+            }
+
+            throw new NotImplementedException();
+        }
+    }
+    internal class JobResult
+    {
+        public JobResult[] InternalResults;
+
+        public string Message;
+
     }
 }

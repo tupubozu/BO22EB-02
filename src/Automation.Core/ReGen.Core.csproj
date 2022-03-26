@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Automation.Cryptography\ReGen.Cryptography.csproj" />
+    <ProjectReference Include="..\Automation.ProgramConfiguration\ReGen.Configuration.csproj" />
+  </ItemGroup>
+
+</Project>
