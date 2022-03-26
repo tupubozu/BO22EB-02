@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Automation.Core\ReGen.Core.csproj" />
+    <ProjectReference Include="..\ReGen.Core\ReGen.Core.csproj" />
   </ItemGroup>
 
 </Project>
