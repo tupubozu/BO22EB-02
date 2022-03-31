@@ -79,16 +79,18 @@ namespace ReGen.ConfigMaker.GUI
                     if (authForm.ShowDialog() != DialogResult.OK) return;
 
                     using (var fileStream = openFileDialog.OpenFile())
-                        await ConfigCore.OpenConfigAsync(fileStream, authForm.Password, configuration, ScriptDictionary, KeyDictionary);
+                        (configuration, ScriptDictionary, KeyDictionary) = await ConfigCore.OpenConfigAsync(fileStream, authForm.Password);
 
-                    ProgramConfiguration.Script.NextID = (ushort)((configuration?.Scripts?.Select((item) => item.ID)?.Max() + 1) ?? 0);
-                    ProgramConfiguration.Key.NextID = (ushort)((configuration?.Keys?.Select((item) => item.ID)?.Max() + 1) ?? 0);
+                    if (configuration.Scripts?.Length > 0)
+                        ProgramConfiguration.Script.NextID = (ushort)(configuration.Scripts.Select((item) => item.ID).Max() + 1) ;
+                    if (configuration.Keys?.Length > 0)
+                        ProgramConfiguration.Key.NextID = (ushort)(configuration.Keys.Select((item) => item.ID).Max() + 1);
 
                     titleTextBox.Text = configuration.Metadata.Title;
                     revisionTextBox.Text = configuration.Metadata.Revision.ToString("O");
                     descriptionTextBox.Text = configuration.Metadata.Description;
-                    authorNameTextBox.Text = configuration.Metadata.Author.Name;
-                    authorEmailTextBox.Text = configuration.Metadata.Author.Email;
+                    authorNameTextBox.Text = configuration.Metadata.Author?.Name;
+                    authorEmailTextBox.Text = configuration.Metadata.Author?.Email;
 
                     hostListBox.Items.Clear();
                     if (!(configuration.Work is null))

@@ -83,8 +83,11 @@ namespace ReGen.Core
             }
         }
 
-        public static async Task OpenConfigAsync(Stream stream, string password, ProgramConfiguration config, Dictionary<ushort, byte[]> scriptDict, Dictionary<ushort, byte[]> keyDict)
+        public static async Task<(ProgramConfiguration, Dictionary<ushort, byte[]>, Dictionary<ushort, byte[]>)> OpenConfigAsync(Stream stream, string password)
         {
+            ProgramConfiguration config = new ProgramConfiguration();
+            Dictionary<ushort, byte[]> scriptDict = new Dictionary<ushort, byte[]>();
+            Dictionary<ushort, byte[]> keyDict = new Dictionary<ushort, byte[]>();
 
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, true, Encoding.UTF8))
             {
@@ -147,6 +150,8 @@ namespace ReGen.Core
                             }
                         }
                     }
+
+                return (config, scriptDict, keyDict);
             }
         }
     }

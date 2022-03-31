@@ -15,8 +15,8 @@ namespace ReGen.CLI
     internal static class Program
     {
         static ProgramConfiguration config;
-        static readonly Dictionary<ushort, byte[]> ScriptDict = new Dictionary<ushort, byte[]>();
-        static readonly Dictionary<ushort, byte[]> KeyDict = new Dictionary<ushort,byte[]>();
+        static Dictionary<ushort, byte[]> ScriptDict;
+        static Dictionary<ushort, byte[]> KeyDict;
 
         static async Task Main(string[] args)
         {
@@ -45,7 +45,7 @@ namespace ReGen.CLI
                 var password = Console.ReadLine();
 
                 using (var fileStream = File.OpenRead(configArchivePath))
-                    await ConfigCore.OpenConfigAsync(fileStream, password, config, ScriptDict, KeyDict);
+                    (config, ScriptDict, KeyDict) = await ConfigCore.OpenConfigAsync(fileStream, password);
 
                 Log.Information("Read configuration \"{0}\" made by {1} ({2}) on {3:O}", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email,config.Metadata.Revision);
                 Console.WriteLine("Description: {0}",config.Metadata.Description);
@@ -69,7 +69,7 @@ namespace ReGen.CLI
             if (config.Scripts is null || config.Scripts.Length == 0)
                 Log.Information("No scripts provided in configuration");
 
-            var results = await config.Work.Execute();
+            //var results = await config.Work.Execute();
 
             Log.Information("Exiting");
 #if DEBUG
@@ -123,7 +123,7 @@ namespace ReGen.CLI
                                 .Where(item => job.Scripts.Contains(item.Key))
                                 .Select(item => (client.CreateCommand(Encoding.UTF8.GetString(item.Value)), item.Key)).ToArray();
 
-                            var commandOutput = commands.Select(async (item) => await Task.Run(() => item.Item1.Execute()));
+                            var commandOutput = await Task.Run(() => commands.Select(async (item) => await Task.Run(() => item.Item1.Execute())));
                             var res = commands.Select((item) => item.Item1.ExitStatus).ToArray();
                             commands.Select((item) => { item.Item1.Dispose(); return true; });
                             
@@ -155,9 +155,14 @@ namespace ReGen.CLI
     }
     internal class JobResult
     {
-        public JobResult[] InternalResults;
+        public string Host;
+        public string JobId;
 
-        public string Message;
+        public ProgramConfiguration.Target.Job Job;
+
+        public string ExecutionText;
+
+        public int ExecutionExitCode;
 
     }
 }
