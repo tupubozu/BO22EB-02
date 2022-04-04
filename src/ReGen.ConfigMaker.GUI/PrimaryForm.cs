@@ -22,9 +22,7 @@ namespace ReGen.ConfigMaker.GUI
         };
 
         private ProgramConfiguration configuration;
-        private Dictionary<ushort, byte[]> ScriptDictionary;
-        private Dictionary<ushort, byte[]> KeyDictionary;
-
+        
         public PrimaryForm()
         {
             InitializeComponent();
@@ -42,9 +40,6 @@ namespace ReGen.ConfigMaker.GUI
                     }
                 }
             };
-
-            ScriptDictionary = new Dictionary<ushort, byte[]>();
-            KeyDictionary = new Dictionary<ushort, byte[]>();
 
             string initDir = Environment.GetEnvironmentVariables()["USERPROFILE"].ToString();
 
@@ -72,14 +67,12 @@ namespace ReGen.ConfigMaker.GUI
             {
                 try
                 {
-                    ScriptDictionary.Clear();
-                    KeyDictionary.Clear();
-
+                    
                     var authForm = new AuthenticationForm();
                     if (authForm.ShowDialog() != DialogResult.OK) return;
 
                     using (var fileStream = openFileDialog.OpenFile())
-                        (configuration, ScriptDictionary, KeyDictionary) = await ConfigCore.OpenConfigAsync(fileStream, authForm.Password);
+                        configuration = await ConfigCore.OpenConfigAsync(fileStream, authForm.Password);
 
                     if (configuration.Scripts?.Length > 0)
                         ProgramConfiguration.Script.NextID = (ushort)(configuration.Scripts.Select((item) => item.ID).Max() + 1) ;
@@ -116,7 +109,7 @@ namespace ReGen.ConfigMaker.GUI
                     toolStripStatusLabel.Text = "Writing configuration to file";
                     
                     using (var fileStream = saveFileDialog.OpenFile())
-                        await ConfigCore.SaveConfigAsync(fileStream, authForm.Password, configuration, ScriptDictionary, KeyDictionary);
+                        await ConfigCore.SaveConfigAsync(fileStream, authForm.Password, configuration);
 
                     toolStripProgressBar.Value = 100;
                 }
@@ -274,10 +267,10 @@ namespace ReGen.ConfigMaker.GUI
             var keyPropertiesCtrl = new KeyPropertiesForm(key);
             if (keyPropertiesCtrl.ShowDialog() == DialogResult.OK)
             {
-                if (KeyDictionary.ContainsKey(key.ID))
-                    KeyDictionary[key.ID] = keyPropertiesCtrl.FileContents;
+                if (configuration.KeyBytes.ContainsKey(key.ID))
+                    configuration.KeyBytes[key.ID] = keyPropertiesCtrl.FileContents;
                 else
-                    KeyDictionary.Add(key.ID, keyPropertiesCtrl.FileContents);
+                    configuration.KeyBytes.Add(key.ID, keyPropertiesCtrl.FileContents);
                 return true;
             }
             else
@@ -316,10 +309,10 @@ namespace ReGen.ConfigMaker.GUI
             var scriptPropertiesCtrl = new ScriptPropertiesForm(script);
             if (scriptPropertiesCtrl.ShowDialog() == DialogResult.OK)
             {
-                if (ScriptDictionary.ContainsKey(script.ID))
-                    ScriptDictionary[script.ID] = scriptPropertiesCtrl.FileContents;
+                if (configuration.ScriptBytes.ContainsKey(script.ID))
+                    configuration.ScriptBytes[script.ID] = scriptPropertiesCtrl.FileContents;
                 else
-                    ScriptDictionary.Add(script.ID, scriptPropertiesCtrl.FileContents);
+                    configuration.ScriptBytes.Add(script.ID, scriptPropertiesCtrl.FileContents);
                 return true;
             }
             else

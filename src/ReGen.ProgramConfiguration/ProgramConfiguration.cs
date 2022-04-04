@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Xml.Serialization;
@@ -11,6 +12,12 @@ namespace ReGen.Configuration
     [XmlRoot(Namespace = "", IsNullable = false, ElementName = "ProgramConfiguration")]
     public partial class ProgramConfiguration
     {
+        [XmlIgnore()]
+        public Dictionary<ushort, byte[]> ScriptBytes { get; set; }
+        
+        [XmlIgnore()]
+        public Dictionary<ushort, byte[]> KeyBytes { get; set; }
+
         public ConfigurationMetadata Metadata { get; set; }
 
         [XmlArrayItem("Output", IsNullable = false)]

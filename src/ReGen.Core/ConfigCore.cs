@@ -16,7 +16,7 @@ namespace ReGen.Core
         private static readonly string InitVectText = "I'm an engineer!";
         private static readonly string XmlConfigZipEntryName = "config.xml.aes";
 
-        public static async Task SaveConfigAsync(Stream stream, string password, ProgramConfiguration config, Dictionary<ushort, byte[]> scriptDict, Dictionary<ushort, byte[]> keyDict)
+        public static async Task SaveConfigAsync(Stream stream, string password, ProgramConfiguration config)
         {
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Create, true, Encoding.UTF8))
             {
@@ -36,7 +36,7 @@ namespace ReGen.Core
                                 using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                                 using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
                                 {
-                                    await writer.WriteAsync(Encoding.UTF8.GetString(keyDict[key.ID]));
+                                    await writer.WriteAsync(Encoding.UTF8.GetString(config.KeyBytes[key.ID]));
                                     await writer.FlushAsync();
                                 }
                             }
@@ -57,7 +57,7 @@ namespace ReGen.Core
                             using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateEncryptor(), CryptoStreamMode.Write))
                             using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
                             {
-                                await writer.WriteAsync(Encoding.UTF8.GetString(scriptDict[script.ID]));
+                                await writer.WriteAsync(Encoding.UTF8.GetString(config.ScriptBytes[script.ID]));
                                 await writer.FlushAsync();
                             }
                         }
@@ -83,11 +83,13 @@ namespace ReGen.Core
             }
         }
 
-        public static async Task<(ProgramConfiguration, Dictionary<ushort, byte[]>, Dictionary<ushort, byte[]>)> OpenConfigAsync(Stream stream, string password)
+        public static async Task<ProgramConfiguration> OpenConfigAsync(Stream stream, string password)
         {
-            ProgramConfiguration config = new ProgramConfiguration();
-            Dictionary<ushort, byte[]> scriptDict = new Dictionary<ushort, byte[]>();
-            Dictionary<ushort, byte[]> keyDict = new Dictionary<ushort, byte[]>();
+            ProgramConfiguration config = new ProgramConfiguration
+            {
+                ScriptBytes = new Dictionary<ushort, byte[]>(),
+                KeyBytes = new Dictionary<ushort, byte[]>()
+            };
 
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, true, Encoding.UTF8))
             {
@@ -111,7 +113,7 @@ namespace ReGen.Core
                         switch (key.Category)
                         {
                             case ProgramConfiguration.Key.KeyCategory.API:
-                                keyDict.Add(key.ID, Encoding.UTF8.GetBytes(key.Value));
+                                config.KeyBytes.Add(key.ID, Encoding.UTF8.GetBytes(key.Value));
                                 break;
                             case ProgramConfiguration.Key.KeyCategory.SSH:
                                 using (var aesCrypto = Crypto.GetAes())
@@ -124,7 +126,7 @@ namespace ReGen.Core
                                     using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
                                     using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
                                     {
-                                        keyDict.Add(key.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                        config.KeyBytes.Add(key.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
                                     }
                                 }
                                 break;
@@ -146,12 +148,12 @@ namespace ReGen.Core
                             using (CryptoStream cryptoStream = new CryptoStream(encryptedConfig.Open(), aesCrypto.CreateDecryptor(), CryptoStreamMode.Read))
                             using (StreamReader reader = new StreamReader(cryptoStream, Encoding.UTF8))
                             {
-                                scriptDict.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
+                                config.ScriptBytes.Add(script.ID, Encoding.UTF8.GetBytes(await reader.ReadToEndAsync()));
                             }
                         }
                     }
 
-                return (config, scriptDict, keyDict);
+                return config;
             }
         }
     }

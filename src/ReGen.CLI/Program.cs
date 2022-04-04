@@ -15,9 +15,7 @@ namespace ReGen.CLI
     internal static class Program
     {
         static ProgramConfiguration config;
-        static Dictionary<ushort, byte[]> ScriptDict;
-        static Dictionary<ushort, byte[]> KeyDict;
-
+        
         static async Task Main(string[] args)
         {
             InitializeLog();
@@ -45,7 +43,7 @@ namespace ReGen.CLI
                 var password = Console.ReadLine();
 
                 using (var fileStream = File.OpenRead(configArchivePath))
-                    (config, ScriptDict, KeyDict) = await ConfigCore.OpenConfigAsync(fileStream, password);
+                    config = await ConfigCore.OpenConfigAsync(fileStream, password);
 
                 Log.Information("Read configuration \"{0}\" made by {1} ({2}) on {3:O}", config.Metadata.Title, config.Metadata.Author.Name, config.Metadata.Author.Email,config.Metadata.Revision);
                 Console.WriteLine("Description: {0}",config.Metadata.Description);
@@ -94,11 +92,11 @@ namespace ReGen.CLI
             Log.Logger = logConfig.CreateLogger();
         }
 
-        static async Task<JobResult[]> Execute (this ProgramConfiguration.Target[] Work)
+        static Task<JobResult>[] Execute (this ProgramConfiguration config)
         {
             List<JobResult> results = new List<JobResult>();
 
-            foreach (var target in Work)
+            foreach (var target in config.Work)
             {
                 var categories = target.Jobs.Select((item) => item.Category);
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
@@ -113,17 +111,17 @@ namespace ReGen.CLI
                                 .Select(key => key.User)
                                 .First(),
                             port: (int)job.Port,
-                            keyFiles: KeyDict
+                            keyFiles: config.KeyBytes
                                 .Where(item => job.Keys.Contains(item.Key))
                                 .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
                                 .ToArray()
                                 ))
                         {
-                            var commands = ScriptDict
+                            var commands = config.ScriptBytes
                                 .Where(item => job.Scripts.Contains(item.Key))
                                 .Select(item => (client.CreateCommand(Encoding.UTF8.GetString(item.Value)), item.Key)).ToArray();
 
-                            var commandOutput = await Task.Run(() => commands.Select(async (item) => await Task.Run(() => item.Item1.Execute())));
+                            var commandOutput = commands.Select(async (item) => await Task.Run(() => item.Item1.Execute()));
                             var res = commands.Select((item) => item.Item1.ExitStatus).ToArray();
                             commands.Select((item) => { item.Item1.Dispose(); return true; });
                             
@@ -155,7 +153,7 @@ namespace ReGen.CLI
     }
     internal class JobResult
     {
-        public string Host;
+        public ProgramConfiguration.Target Target;
         public string JobId;
 
         public ProgramConfiguration.Target.Job Job;
