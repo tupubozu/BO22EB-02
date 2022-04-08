@@ -71,53 +71,62 @@ namespace ReGen.CLI
             if (config.Scripts is null || config.Scripts.Length == 0)
                 Log.Information("No scripts provided in configuration");
 
-            //var results = await config.Work.Execute();
+            try
+            {
+                var results = config.Execute();
 
-            foreach (var reportName in config.Options.Where(i => i.Category == ProgramConfiguration.Output.OutputCategory.File).Select(i => i.Address))
-                using (var baseStream = File.Open(reportName, FileMode.Create, FileAccess.ReadWrite))
-                using (var reportFile = SpreadsheetDocument.Create(baseStream, SpreadsheetDocumentType.Workbook))
-                {
-                    Log.Information("Creating report: {0}", reportName);
-                    var wbPart = reportFile.AddWorkbookPart();
-                    wbPart.Workbook = new Workbook();
-
-                    var wsPart = wbPart.AddNewPart<WorksheetPart>();
-                    //wsPart.Worksheet = new Worksheet(new SheetData());
-
-                    var sheets = reportFile.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
-
-                    var sheet = new Sheet()
+                foreach (var reportName in config.Options.Where(i => i.Category == ProgramConfiguration.Output.OutputCategory.File).Select(i => i.Address))
+                    using (var baseStream = File.Open(reportName, FileMode.Create, FileAccess.ReadWrite))
+                    using (var reportFile = SpreadsheetDocument.Create(baseStream, SpreadsheetDocumentType.Workbook))
                     {
-                        Id = reportFile.WorkbookPart.GetIdOfPart(wsPart),
-                        SheetId = 1,
-                        Name = "Dummy"
-                    };
-                    sheets.Append(sheet);
+                        Log.Information("Creating report: {0}", reportName);
+                        var wbPart = reportFile.AddWorkbookPart();
+                        wbPart.Workbook = new Workbook();
 
-                    Worksheet worksheet = new Worksheet();
-                    SheetData sheetData = new SheetData();
-                    Row row = new Row();
-                    Cell cell = new Cell()
-                    {
-                        CellReference = "A1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Microsoft")
-                    };
-                    row.Append(cell);
+                        var wsPart = wbPart.AddNewPart<WorksheetPart>();
+                        //wsPart.Worksheet = new Worksheet(new SheetData());
 
-                    cell = new Cell()
-                    {
-                        CellReference = "B1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Microsoft")
-                    };
-                    row.Append(cell);
-                    sheetData.Append(row);
-                    worksheet.Append(sheetData);
+                        var sheets = reportFile.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
 
-                    wsPart.Worksheet = worksheet;
+                        var sheet = new Sheet()
+                        {
+                            Id = reportFile.WorkbookPart.GetIdOfPart(wsPart),
+                            SheetId = 1,
+                            Name = "Dummy"
+                        };
+                        sheets.Append(sheet);
 
-                }
+                        Worksheet worksheet = new Worksheet();
+                        SheetData sheetData = new SheetData();
+                        Row row = new Row();
+                        Cell cell = new Cell()
+                        {
+                            CellReference = "A1",
+                            DataType = CellValues.String,
+                            CellValue = new CellValue("Microsoft")
+                        };
+                        row.Append(cell);
+
+                        cell = new Cell()
+                        {
+                            CellReference = "B1",
+                            DataType = CellValues.String,
+                            CellValue = new CellValue("Microsoft")
+                        };
+                        row.Append(cell);
+                        sheetData.Append(row);
+                        worksheet.Append(sheetData);
+
+                        wsPart.Worksheet = worksheet;
+
+                    }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Exception: {0}", ex);
+                Log.Error("Error encountered: {0}: {1}", ex.GetType().FullName, ex.Message);
+            }
+
             Log.Information("Exiting");
 #if DEBUG
             Console.ReadKey(true);
