@@ -15,47 +15,26 @@ namespace ReGen.CLI
     {
         public class JobResult : IComparable<JobResult>
         {
-            public class Factory
-            {
-                private string Target;
-
-                public Factory(string Target)
-                {
-                    this.Target = Target;
-                }
-                public JobResult GetNewJobResult(ProgramConfiguration.Target.Job Job)
-                {
-                    return new JobResult
-                    {
-                        Target = this.Target,
-                        Job = Job,
-                    };
-                }
-            }
-
             public string Target;
 
-            public ProgramConfiguration.Target.Job Job;
+            public string JobName;
 
-            public string ExecutionText;
-
-            public int ExecutionExitCode;
+            public Worksheet Worksheet;
 
             public int CompareTo(JobResult other)
             {
                 if (this.Target != other.Target)
                     return this.Target.CompareTo(other.Target);
-                else if (this.Job.Name != other.Job.Name)
-                    return this.Job.Name.CompareTo(other.Job.Name);
+                else if (this.JobName != other.JobName)
+                    return this.JobName.CompareTo(other.JobName);
                 else
                     return 0;
             }
-
         }
 
         public static Task<JobResult>[] Execute(this ProgramConfiguration config)
         {
-            List<JobResult> results = new List<JobResult>();
+            List<Task<JobResult>> results = new List<Task<JobResult>>();
 
             foreach (var target in config.Work)
             {
@@ -63,12 +42,13 @@ namespace ReGen.CLI
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
                 {
                     var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Custom);
-                    ExecuteSSHJob(config, target, jobs);
+                    var subResults = ExecuteSSHJob(config, target, jobs);
+                    results.AddRange(subResults);
                 }
 
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.McAfee))
                 {
-                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.McAfee);
+                    //var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.McAfee);
                     throw new NotSupportedException();
                 }
 
@@ -85,79 +65,83 @@ namespace ReGen.CLI
                 }
             }
 
-            throw new NotImplementedException();
+            return results.ToArray();
         }
 
-        public static List<Worksheet> ExecuteSSHJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
+        public static List<Task<JobResult>> ExecuteSSHJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
         {
-            List<Worksheet> resultSheets = new List<Worksheet>();
+            List<Task<JobResult>> subResults = new List<Task<JobResult>>();
 
             foreach (var job in jobs)
             {
-                var users = config.Keys
-                       .Where(item => job.Keys.Contains(item.ID))
-                       .Select(key => key.User);
-
-                List<Row> rows = new List<Row>();
-                Row headerRow = new Row(new Cell[]
+                subResults.Add(Task.Run(() =>
                 {
-                    new Cell()
-                    {
-                        CellReference = "A1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Job Name")
-                    },
-                    new Cell()
-                    {
-                        CellReference = "B1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Return Value")
-                    },
-                    new Cell()
-                    {
-                        CellReference = "C1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Execution Result")
-                    }
-                });
+                    var users = config.Keys
+                           .Where(item => job.Keys.Contains(item.ID))
+                           .Select(key => key.User);
 
-                int rowOffset = 2;
+                    List<Row> rows = new List<Row>();
+                    Row headerRow = new Row(new Cell[]
+                        {
+                            new Cell()
+                            {
+                                CellReference = "A1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Job Name")
+                            },
+                            new Cell()
+                            {
+                               CellReference = "B1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Return Value")
+                            },
+                            new Cell()
+                            {
+                                CellReference = "C1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Execution Result")
+                            }
+                        });
 
-                foreach (string user in users)
-                {
+                    rows.Add(headerRow);
 
-                    using (var client = new SshClient(
-                        host: target.Host,
-                        username: user,
-                        port: (int)job.Port,
-                        keyFiles: config.KeyBytes
-                            .Where(item => job.Keys.Contains(item.Key))
-                            .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
-                            .ToArray()
-                            ))
+                    int rowOffset = 2;
+
+                    foreach (string user in users)
                     {
                         try
                         {
-                            client.Connect();
-
-                            var commands = config.ScriptBytes
-                                .Where(bytes => job.Scripts.Contains(bytes.Key))
-                                .Select(pair => (Key: pair.Key, Value: client.CreateCommand(Encoding.UTF8.GetString(pair.Value)))).ToArray();
-
-                            var commandOutput = commands.Select((item) => (Key: item.Key, Value: item.Value.Execute()));
-                            var res = commands.Select((item) => new KeyValuePair<ushort, int>(item.Key, item.Value.ExitStatus));
-
-                            foreach (var item in commands) item.Value.Dispose();
-
-                            for (int i = 0; i < job.Scripts.Length; i++)
+                            using (var client = new SshClient(
+                            host: target.Host,
+                            username: user,
+                            port: (int)job.Port,
+                            
+                            keyFiles: config.KeyBytes
+                                .Where(item => job.Keys.Contains(item.Key))
+                                .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
+                                .ToArray()
+                                ))
                             {
-                                Row resultRow = new Row(new Cell[]
+
+                                client.Connect();
+
+                                var commands = config.ScriptBytes
+                                    .Where(bytes => job.Scripts.Contains(bytes.Key))
+                                    .Select(pair => (Key: pair.Key, Value: client.CreateCommand(Encoding.UTF8.GetString(pair.Value)))).ToArray();
+
+                                var commandOutput = commands.Select((item) => (Key: item.Key, Value: item.Value.Execute()));
+                                var res = commands.Select((item) => new KeyValuePair<ushort, int>(item.Key, item.Value.ExitStatus));
+
+                                
+                                for (int i = 0; i < job.Scripts.Length; i++)
                                 {
+                                    Row resultRow = new Row(new Cell[]
+                                    {
                                     new Cell()
                                     {
                                         CellReference = $"A{rowOffset}",
                                         DataType = CellValues.String,
-                                        CellValue = new CellValue($"{job.Name}: {config.Scripts.Single(item => item.ID ==  job.Scripts[i]).Name}")
+                                        CellValue = new CellValue(config.Scripts.Single(item => item.ID ==  job.Scripts[i]).Name)
                                     },
                                     new Cell()
                                     {
@@ -171,47 +155,54 @@ namespace ReGen.CLI
                                         DataType = CellValues.String,
                                         CellValue = new CellValue(commandOutput.Single(item => item.Key == job.Scripts[i]).Value)
                                     }
-                                });
-                                rows.Add(resultRow);
-                                rowOffset++;
-                            }
+                                    });
+                                    rows.Add(resultRow);
+                                    rowOffset++;
+                                }
 
-                            break;
+                                foreach (var item in commands) item.Value.Dispose();
+
+                                break;
+                            }
                         }
                         catch (Exception ex)
                         {
                             Row resultRow = new Row(new Cell[]
+                            {
+                                new Cell()
                                 {
-                                    new Cell()
-                                    {
-                                        CellReference = $"A{rowOffset}",
-                                        DataType = CellValues.String,
-                                        CellValue = new CellValue($"{job.Name}: SSH: {user}@{target.Host}")
-                                    },
-                                    new Cell()
-                                    {
-                                        CellReference = $"B{rowOffset}",
-                                        DataType = CellValues.Number,
-                                        CellValue = new CellValue(1)
-                                    },
-                                    new Cell()
-                                    {
-                                        CellReference = $"C{rowOffset}",
-                                        DataType = CellValues.String,
-                                        CellValue = new CellValue($"{ex.GetType().FullName}: {ex.Message}")
-                                    }
-                                });
+                                    CellReference = $"A{rowOffset}",
+                                    DataType = CellValues.String,
+                                    CellValue = new CellValue($"SSH: {user}@{target.Host}")
+                                },
+                                new Cell()
+                                {
+                                    CellReference = $"B{rowOffset}",
+                                    DataType = CellValues.Number,
+                                    CellValue = new CellValue(1)
+                                },
+                                new Cell()
+                                {
+                                    CellReference = $"C{rowOffset}",
+                                    DataType = CellValues.String,
+                                    CellValue = new CellValue($"{ex.GetType().FullName}: {ex.Message}")
+                                }
+                            });
+
                             rows.Add(resultRow);
                             rowOffset++;
                         }
-                    }
-                }
 
-                SheetData resultData = new SheetData(rows.ToArray());
-                resultSheets.Add(new Worksheet(resultData));
+                    }
+
+                    SheetData resultData = new SheetData(rows.ToArray());
+                    JobResult result = new JobResult() { Target = target.Host, JobName = job.Name, Worksheet = new Worksheet(resultData) };
+
+                    return result;
+                }));
             }
 
-            return resultSheets;
+            return subResults;
         }
     }
 }

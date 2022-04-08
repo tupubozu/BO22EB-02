@@ -74,6 +74,7 @@ namespace ReGen.CLI
             try
             {
                 var results = config.Execute();
+                //Task.WaitAll(results);
 
                 foreach (var reportName in config.Options.Where(i => i.Category == ProgramConfiguration.Output.OutputCategory.File).Select(i => i.Address))
                     using (var baseStream = File.Open(reportName, FileMode.Create, FileAccess.ReadWrite))
@@ -83,42 +84,24 @@ namespace ReGen.CLI
                         var wbPart = reportFile.AddWorkbookPart();
                         wbPart.Workbook = new Workbook();
 
-                        var wsPart = wbPart.AddNewPart<WorksheetPart>();
-                        //wsPart.Worksheet = new Worksheet(new SheetData());
-
-                        var sheets = reportFile.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
-
-                        var sheet = new Sheet()
+                        for (uint i = 0; i < results.Length; i++)
                         {
-                            Id = reportFile.WorkbookPart.GetIdOfPart(wsPart),
-                            SheetId = 1,
-                            Name = "Dummy"
-                        };
-                        sheets.Append(sheet);
+                            var result = await results[i];
 
-                        Worksheet worksheet = new Worksheet();
-                        SheetData sheetData = new SheetData();
-                        Row row = new Row();
-                        Cell cell = new Cell()
-                        {
-                            CellReference = "A1",
-                            DataType = CellValues.String,
-                            CellValue = new CellValue("Microsoft")
-                        };
-                        row.Append(cell);
+                            var wsPart = wbPart.AddNewPart<WorksheetPart>();
+                            
+                            var sheets = reportFile.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
 
-                        cell = new Cell()
-                        {
-                            CellReference = "B1",
-                            DataType = CellValues.String,
-                            CellValue = new CellValue("Microsoft")
-                        };
-                        row.Append(cell);
-                        sheetData.Append(row);
-                        worksheet.Append(sheetData);
+                            var sheet = new Sheet()
+                            {
+                                Id = reportFile.WorkbookPart.GetIdOfPart(wsPart),
+                                SheetId = i + 1,
+                                Name = $"{result.Target}; {result.JobName}"
+                            };
+                            sheets.Append(sheet);
 
-                        wsPart.Worksheet = worksheet;
-
+                            wsPart.Worksheet = result.Worksheet;
+                        }
                     }
             }
             catch (Exception ex)
