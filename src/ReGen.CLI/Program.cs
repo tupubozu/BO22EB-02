@@ -141,16 +141,4 @@ namespace ReGen.CLI
             Log.Logger = logConfig.CreateLogger();
         }
     }
-    internal class JobResult
-    {
-        public ProgramConfiguration.Target Target;
-        public string JobId;
-
-        public ProgramConfiguration.Target.Job Job;
-
-        public string ExecutionText;
-
-        public int ExecutionExitCode;
-
-    }
 }

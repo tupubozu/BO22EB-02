@@ -13,7 +13,45 @@ namespace ReGen.CLI
 {
     public static class ReportOperations
     {
-        public class JobResult { }
+        public class JobResult : IComparable<JobResult>
+        {
+            public class Factory
+            {
+                private string Target;
+
+                public Factory(string Target)
+                {
+                    this.Target = Target;
+                }
+                public JobResult GetNewJobResult(ProgramConfiguration.Target.Job Job)
+                {
+                    return new JobResult
+                    {
+                        Target = this.Target,
+                        Job = Job,
+                    };
+                }
+            }
+
+            public string Target;
+
+            public ProgramConfiguration.Target.Job Job;
+
+            public string ExecutionText;
+
+            public int ExecutionExitCode;
+
+            public int CompareTo(JobResult other)
+            {
+                if (this.Target != other.Target)
+                    return this.Target.CompareTo(other.Target);
+                else if (this.Job.Name != other.Job.Name)
+                    return this.Job.Name.CompareTo(other.Job.Name);
+                else
+                    return 0;
+            }
+
+        }
 
         public static Task<JobResult>[] Execute(this ProgramConfiguration config)
         {
