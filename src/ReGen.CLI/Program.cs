@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +9,7 @@ using System.Threading.Tasks;
 using ReGen.Configuration;
 using ReGen.Cryptography;
 using Renci.SshNet;
+using Renci.SshNet.Common;
 using Serilog;
 using System.IO;
 using ReGen.Core;
@@ -69,6 +73,51 @@ namespace ReGen.CLI
 
             //var results = await config.Work.Execute();
 
+            foreach (var reportName in config.Options.Where(i => i.Category == ProgramConfiguration.Output.OutputCategory.File).Select(i => i.Address))
+                using (var baseStream = File.Open(reportName, FileMode.Create, FileAccess.ReadWrite))
+                using (var reportFile = SpreadsheetDocument.Create(baseStream, SpreadsheetDocumentType.Workbook))
+                {
+                    Log.Information("Creating report: {0}", reportName);
+                    var wbPart = reportFile.AddWorkbookPart();
+                    wbPart.Workbook = new Workbook();
+
+                    var wsPart = wbPart.AddNewPart<WorksheetPart>();
+                    //wsPart.Worksheet = new Worksheet(new SheetData());
+
+                    var sheets = reportFile.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
+
+                    var sheet = new Sheet()
+                    {
+                        Id = reportFile.WorkbookPart.GetIdOfPart(wsPart),
+                        SheetId = 1,
+                        Name = "Dummy"
+                    };
+                    sheets.Append(sheet);
+
+                    Worksheet worksheet = new Worksheet();
+                    SheetData sheetData = new SheetData();
+                    Row row = new Row();
+                    Cell cell = new Cell()
+                    {
+                        CellReference = "A1",
+                        DataType = CellValues.String,
+                        CellValue = new CellValue("Microsoft")
+                    };
+                    row.Append(cell);
+
+                    cell = new Cell()
+                    {
+                        CellReference = "B1",
+                        DataType = CellValues.String,
+                        CellValue = new CellValue("Microsoft")
+                    };
+                    row.Append(cell);
+                    sheetData.Append(row);
+                    worksheet.Append(sheetData);
+
+                    wsPart.Worksheet = worksheet;
+
+                }
             Log.Information("Exiting");
 #if DEBUG
             Console.ReadKey(true);
@@ -90,65 +139,6 @@ namespace ReGen.CLI
                 .MinimumLevel.Debug();
 
             Log.Logger = logConfig.CreateLogger();
-        }
-
-        static Task<JobResult>[] Execute (this ProgramConfiguration config)
-        {
-            List<JobResult> results = new List<JobResult>();
-
-            foreach (var target in config.Work)
-            {
-                var categories = target.Jobs.Select((item) => item.Category);
-                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
-                {
-                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Custom);
-                    foreach (var job in jobs)
-                    {
-                        using (var client = new SshClient(
-                            host: target.Host,
-                            username: config.Keys
-                                .Where(item => job.Keys.Contains(item.ID))
-                                .Select(key => key.User)
-                                .First(),
-                            port: (int)job.Port,
-                            keyFiles: config.KeyBytes
-                                .Where(item => job.Keys.Contains(item.Key))
-                                .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
-                                .ToArray()
-                                ))
-                        {
-                            var commands = config.ScriptBytes
-                                .Where(item => job.Scripts.Contains(item.Key))
-                                .Select(item => (client.CreateCommand(Encoding.UTF8.GetString(item.Value)), item.Key)).ToArray();
-
-                            var commandOutput = commands.Select(async (item) => await Task.Run(() => item.Item1.Execute()));
-                            var res = commands.Select((item) => item.Item1.ExitStatus).ToArray();
-                            commands.Select((item) => { item.Item1.Dispose(); return true; });
-                            
-                        }
-                    }
-                }
-                
-                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.McAfee))
-                {
-                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.McAfee);
-
-                }
-
-                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Acronis))
-                {
-                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Acronis);
-
-                }
-
-                if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.vCenter))
-                {
-                    var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.vCenter);
-
-                }
-            }
-
-            throw new NotImplementedException();
         }
     }
     internal class JobResult
