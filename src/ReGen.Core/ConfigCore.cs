@@ -85,11 +85,7 @@ namespace ReGen.Core
 
         public static async Task<ProgramConfiguration> OpenConfigAsync(Stream stream, string password)
         {
-            ProgramConfiguration config = new ProgramConfiguration
-            {
-                ScriptBytes = new Dictionary<ushort, byte[]>(),
-                KeyBytes = new Dictionary<ushort, byte[]>()
-            };
+            ProgramConfiguration config;
 
             using (var zipConfig = new ZipArchive(stream, ZipArchiveMode.Read, true, Encoding.UTF8))
             {

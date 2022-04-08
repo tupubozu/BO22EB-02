@@ -32,6 +32,12 @@ namespace ReGen.Configuration
         [XmlArrayItem("Script", IsNullable = false)]
         public Script[] Scripts { get; set; }
 
+        public ProgramConfiguration()
+        {
+            ScriptBytes = new Dictionary<ushort, byte[]>();
+            KeyBytes = new Dictionary<ushort, byte[]>();
+        }
+
         public static bool TryParse(Stream stream, out ProgramConfiguration config)
         {
             try

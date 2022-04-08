@@ -12,7 +12,7 @@ namespace ReGen.ConfigMaker.GUI
     {
         public static readonly string DefaultFileName = "run.prgconf";
         public static readonly string DefaultFileExtension = ".prgconf";
-        public static readonly string DefaultFileFilter = $"Configuration |{DefaultFileExtension}";
+        public static readonly string DefaultFileFilter = $"Configuration |*{DefaultFileExtension}";
         public static readonly ProgramConfiguration.Target.Job.JobCategory[] targetJobCategories = new ProgramConfiguration.Target.Job.JobCategory[]
         {
             ProgramConfiguration.Target.Job.JobCategory.McAfee,
