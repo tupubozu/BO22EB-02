@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+	<Deterministic>false</Deterministic>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/tupubozu/BO22EB-02</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

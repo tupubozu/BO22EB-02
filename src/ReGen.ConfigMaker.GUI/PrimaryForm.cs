@@ -27,6 +27,9 @@ namespace ReGen.ConfigMaker.GUI
         {
             InitializeComponent();
 
+            var assemblyName = typeof(Program).Assembly.GetName();
+            this.Text = string.Format("{0} version {1} {2}", assemblyName.Name, assemblyName.Version, assemblyName.ProcessorArchitecture);
+
             configuration = new ProgramConfiguration()
             {
                 Metadata = new ProgramConfiguration.ConfigurationMetadata { Author = new ProgramConfiguration.ConfigurationMetadata.MetadataAuthor() },

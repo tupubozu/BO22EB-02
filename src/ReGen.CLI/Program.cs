@@ -22,6 +22,10 @@ namespace ReGen.CLI
         
         static async Task Main(string[] args)
         {
+            var assembly = typeof(Program).Assembly;
+            var assemblyName = assembly.GetName();
+            Console.WriteLine("{0} version {1} {2} {3}", assemblyName.Name, assemblyName.Version, assemblyName.ProcessorArchitecture, Environment.NewLine);
+            
             InitializeLog();
             Log.Information("Starting program");
 

@@ -6,6 +6,11 @@
     <ImplicitUsings>disable</ImplicitUsings>
 	<LangVersion>7.3</LangVersion>
     <Nullable>disable</Nullable>
+    <RepositoryUrl>https://github.com/tupubozu/BO22EB-02</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+	<Deterministic>false</Deterministic>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

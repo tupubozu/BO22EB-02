@@ -7,6 +7,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
 	<LangVersion>7.3</LangVersion>
+	<RepositoryUrl>https://github.com/tupubozu/BO22EB-02</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<AssemblyVersion>1.0.*</AssemblyVersion>
+	<Deterministic>false</Deterministic>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
