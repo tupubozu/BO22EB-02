@@ -12,6 +12,7 @@
 	<AssemblyVersion>1.0.*</AssemblyVersion>
 	<Deterministic>false</Deterministic>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<Authors>tupubozu</Authors>
   </PropertyGroup>
 
   <ItemGroup>
