@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReGen.Core\ReGen.Core.csproj" />
+    <ProjectReference Include="..\VCenterApiClient\VCenterApiClient.csproj" />
   </ItemGroup>
 
 </Project>
