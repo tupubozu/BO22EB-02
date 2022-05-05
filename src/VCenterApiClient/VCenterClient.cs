@@ -9,15 +9,15 @@ namespace VCenterApiClient
     public class VCenterClient : ApiClient
     {
 
-        string UPstr;
+        string SessionKey;
 
         public VCenterClient(Uri baseAddress) : this(baseAddress, null)
         {
         }
 
-        public VCenterClient(Uri baseAddress, string apiKey) : base(baseAddress, apiKey)
+        public VCenterClient(Uri baseAddress, string apiKey) : base(baseAddress)
         {
-            UPstr = apiKey;
+            SessionKey = apiKey;
             //if (!string.IsNullOrEmpty(ApiKey))
                 //SetHttpHeader("vmware-api-session-id", ApiKey);
         }
@@ -32,9 +32,9 @@ namespace VCenterApiClient
 
         public async Task CreateSessionAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, "/api/session"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/session"))
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", UPstr);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", SessionKey);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var session = await RequestObjectAsync<SessionParameters>(request);
                 ApiKey = session.Password;
@@ -45,9 +45,9 @@ namespace VCenterApiClient
 
         public async Task DeleteSessionAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, "/api/session"))
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, "api/session"))
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", UPstr);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", SessionKey);
                 await RequestAsync(request);
             }
         }
@@ -55,7 +55,7 @@ namespace VCenterApiClient
         public VMSummmary[] ListVm() => ListVmAsync().GetAwaiter().GetResult();
         public async Task<VMSummmary[]> ListVmAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/vcenter/vm"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, "api/vcenter/vm"))
             {
                 request.Headers.Add("Accept", "application/json");
                 return await RequestObjectAsync<VMSummmary[]>(request);
