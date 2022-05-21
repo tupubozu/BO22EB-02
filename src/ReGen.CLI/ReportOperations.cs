@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCenterApiClient;
 
 namespace ReGen.CLI
 {
@@ -68,17 +69,30 @@ namespace ReGen.CLI
 
             return results.ToArray();
         }
-
-        private static List<Task<JobResult>> ExecuteVCenterJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
+        public static List<Task<JobResult>> ExecuteVCenterJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
         {
-            List<Task<JobResult>> subResults = new List<Task<JobResult>>();
-
             foreach (var job in jobs)
             {
-                subResults.Add(Task.Run(() =>
+                var keys =
+                    from key in config.Keys
+                    where job.Keys.Contains(key.ID)
+                    select key.Value;
+
+                foreach (var key in keys)
                 {
-                    return new JobResult();
-                }));
+                    try
+                    {
+                        var client = new VCenterClient(new Uri($"https://{target.Host}:{job.Port}/"), key);
+                        client.CreateSession();
+                        var vm_arr = client.ListVm();
+
+                        break;
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
             }
             throw new NotImplementedException();
         }
@@ -89,20 +103,26 @@ namespace ReGen.CLI
 
             foreach (var job in jobs)
             {
-                subResults.Add(Task.Run(() =>
-                {
-                    var users = config.Keys
-                           .Where(item => job.Keys.Contains(item.ID))
-                           .Select(key => key.User);
+                subResults.Add(Task.Run(() => SSHReport(config, target, job)));
+            }
 
-                    List<Row> rows = new List<Row>();
-                    Row headerRow = new Row(new Cell[]
-                        {
+            return subResults;
+        }
+
+        private static JobResult SSHReport(ProgramConfiguration config, ProgramConfiguration.Target target, ProgramConfiguration.Target.Job job)
+        {
+            var users = config.Keys
+                   .Where(item => job.Keys.Contains(item.ID))
+                   .Select(key => key.User);
+
+            List<Row> rows = new List<Row>();
+            Row headerRow = new Row(new Cell[]
+                {
                             new Cell()
                             {
                                 CellReference = "A1",
                                 DataType = CellValues.String,
-                                CellValue = new CellValue("Job Name"),
+                                CellValue = new CellValue("Job Name")
                             },
                             new Cell()
                             {
@@ -116,71 +136,39 @@ namespace ReGen.CLI
                                 DataType = CellValues.String,
                                 CellValue = new CellValue("Execution Result")
                             }
-                        });
+                });
 
-                    rows.Add(headerRow);
+            rows.Add(headerRow);
 
-                    int rowOffset = 2;
+            int rowOffset = 2;
 
-                    foreach (string user in users)
+            foreach (string user in users)
+            {
+                try
+                {
+                    using (var client = new SshClient(
+                    host: target.Host,
+                    username: user,
+                    port: (int)job.Port,
+
+                    keyFiles: config.KeyBytes
+                        .Where(item => job.Keys.Contains(item.Key))
+                        .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
+                        .ToArray()
+                        ))
                     {
-                        try
-                        {
-                            using (var client = new SshClient(
-                            host: target.Host,
-                            username: user,
-                            port: (int)job.Port,
-                            
-                            keyFiles: config.KeyBytes
-                                .Where(item => job.Keys.Contains(item.Key))
-                                .Select(key => new PrivateKeyFile(new MemoryStream(key.Value)))
-                                .ToArray()
-                                ))
-                            {
 
-                                client.Connect();
+                        client.Connect();
 
-                                var commands = config.ScriptBytes
-                                    .Where(bytes => job.Scripts.Contains(bytes.Key))
-                                    .Select(pair => (Key: pair.Key, Value: client.CreateCommand(Encoding.UTF8.GetString(pair.Value)))).ToArray();
+                        var commands = config.ScriptBytes
+                            .Where(bytes => job.Scripts.Contains(bytes.Key))
+                            .Select(pair => (Key: pair.Key, Value: client.CreateCommand(Encoding.UTF8.GetString(pair.Value)))).ToArray();
 
-                                var commandOutput = commands.Select((item) => (Key: item.Key, Value: item.Value.Execute()));
-                                var res = commands.Select((item) => new KeyValuePair<ushort, int>(item.Key, item.Value.ExitStatus));
+                        var commandOutput = commands.Select((item) => (Key: item.Key, Value: item.Value.Execute()));
+                        var res = commands.Select((item) => new KeyValuePair<ushort, int>(item.Key, item.Value.ExitStatus));
 
-                                
-                                for (int i = 0; i < job.Scripts.Length; i++)
-                                {
-                                    Row resultRow = new Row(new Cell[]
-                                    {
-                                    new Cell()
-                                    {
-                                        CellReference = $"A{rowOffset}",
-                                        DataType = CellValues.String,
-                                        CellValue = new CellValue(config.Scripts.Single(item => item.ID ==  job.Scripts[i]).Name)
-                                    },
-                                    new Cell()
-                                    {
-                                        CellReference = $"B{rowOffset}",
-                                        DataType = CellValues.Number,
-                                        CellValue = new CellValue(res.Single(item => item.Key == job.Scripts[i]).Value)
-                                    },
-                                    new Cell()
-                                    {
-                                        CellReference = $"C{rowOffset}",
-                                        DataType = CellValues.String,
-                                        CellValue = new CellValue(commandOutput.Single(item => item.Key == job.Scripts[i]).Value)
-                                    }
-                                    });
-                                    rows.Add(resultRow);
-                                    rowOffset++;
-                                }
 
-                                foreach (var item in commands) item.Value.Dispose();
-
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
+                        for (int i = 0; i < job.Scripts.Length; i++)
                         {
                             Row resultRow = new Row(new Cell[]
                             {
@@ -188,36 +176,64 @@ namespace ReGen.CLI
                                 {
                                     CellReference = $"A{rowOffset}",
                                     DataType = CellValues.String,
-                                    CellValue = new CellValue($"SSH: {user}@{target.Host}")
+                                    CellValue = new CellValue(config.Scripts.Single(item => item.ID ==  job.Scripts[i]).Name)
                                 },
                                 new Cell()
                                 {
                                     CellReference = $"B{rowOffset}",
                                     DataType = CellValues.Number,
-                                    CellValue = new CellValue(1)
+                                    CellValue = new CellValue(res.Single(item => item.Key == job.Scripts[i]).Value)
                                 },
                                 new Cell()
                                 {
                                     CellReference = $"C{rowOffset}",
                                     DataType = CellValues.String,
-                                    CellValue = new CellValue($"{ex.GetType().FullName}: {ex.Message}")
+                                    CellValue = new CellValue(commandOutput.Single(item => item.Key == job.Scripts[i]).Value)
                                 }
                             });
-
                             rows.Add(resultRow);
                             rowOffset++;
                         }
 
+                        foreach (var item in commands) item.Value.Dispose();
+
+                        break;
                     }
+                }
+                catch (Exception ex)
+                {
+                    Row resultRow = new Row(new Cell[]
+                    {
+                        new Cell()
+                        {
+                            CellReference = $"A{rowOffset}",
+                            DataType = CellValues.String,
+                            CellValue = new CellValue($"SSH: {user}@{target.Host}")
+                        },
+                        new Cell()
+                        {
+                            CellReference = $"B{rowOffset}",
+                            DataType = CellValues.Number,
+                            CellValue = new CellValue(1)
+                        },
+                        new Cell()
+                        {
+                            CellReference = $"C{rowOffset}",
+                            DataType = CellValues.String,
+                            CellValue = new CellValue($"{ex.GetType().FullName}: {ex.Message}")
+                        }
+                    });
 
-                    SheetData resultData = new SheetData(rows.ToArray());
-                    JobResult result = new JobResult() { Target = target.Host, JobName = job.Name, Worksheet = new Worksheet(resultData) };
+                    rows.Add(resultRow);
+                    rowOffset++;
+                }
 
-                    return result;
-                }));
             }
 
-            return subResults;
+            SheetData resultData = new SheetData(rows.ToArray());
+            JobResult result = new JobResult() { Target = target.Host, JobName = job.Name, Worksheet = new Worksheet(resultData) };
+
+            return result;
         }
     }
 }

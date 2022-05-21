@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net472;net48;net6.0</TargetFrameworks>
+    <TargetFrameworks>net462;net472;net48;net6.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
 	<LangVersion>7.3</LangVersion>
     <Nullable>disable</Nullable>
@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReGen.Core\ReGen.Core.csproj" />
+    <ProjectReference Include="..\VCenterApiClient\VCenterApiClient.csproj" />
   </ItemGroup>
 
 </Project>

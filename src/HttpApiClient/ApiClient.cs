@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Collections.Generic;
 
 namespace HttpApiClient
 {
@@ -24,12 +25,13 @@ namespace HttpApiClient
             client = new HttpClient();
             client.BaseAddress = baseAddress;
             ApiKey = apiKey;
-            client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("Content-Type", "application/json"); // Migth be required to be moved into a HttpRequest object in each of the sub-classes' API calls (methods)
+            
+            //client.DefaultRequestHeaders.Clear();
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //client.DefaultRequestHeaders.Add("Content-Type", "application/json"); // Migth be required to be moved into a HttpRequest object in each of the sub-classes' API calls (methods)
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             client.Dispose();
         }
@@ -37,6 +39,30 @@ namespace HttpApiClient
         protected internal void SetAuthHeader(AuthenticationHeaderValue authHeader)
         {
             client.DefaultRequestHeaders.Authorization = authHeader;
+        }
+
+        protected internal void SetHttpHeader(string name, IEnumerable<string> values)
+        {
+            client.DefaultRequestHeaders.Add(name, values);
+        }
+
+        protected internal void SetHttpHeader(string name, string value)
+        {
+            client.DefaultRequestHeaders.Add(name, value);
+        }
+
+        protected internal async Task RequestAsync(HttpRequestMessage apiRequest)
+        {
+            using (var response = (await client.SendAsync(apiRequest)).EnsureSuccessStatusCode())
+                return;
+        }
+
+        protected internal async Task<T> RequestObjectAsync<T>(HttpRequestMessage apiRequest)
+        {
+            using (var response = (await client.SendAsync(apiRequest)).EnsureSuccessStatusCode())
+            using (var a = await response.Content.ReadAsStreamAsync())
+            using (var b = new StreamReader(a))
+                return JsonConvert.DeserializeObject<T>(await b.ReadToEndAsync());
         }
 
         protected internal async Task<T> GetObjectAsync<T>(string uri)
