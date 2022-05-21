@@ -42,7 +42,7 @@ namespace ReGen.CLI
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
                 {
                     var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Custom);
-                    var subResults = ExecuteSSHJob(config, target, jobs);
+                    List<Task<JobResult>> subResults = ExecuteSSHJob(config, target, jobs);
                     results.AddRange(subResults);
                 }
 
@@ -61,11 +61,26 @@ namespace ReGen.CLI
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.vCenter))
                 {
                     var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.vCenter);
-
+                    List<Task<JobResult>> subResults = ExecuteVCenterJob(config, target, jobs);
+                    results.AddRange(subResults);
                 }
             }
 
             return results.ToArray();
+        }
+
+        private static List<Task<JobResult>> ExecuteVCenterJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
+        {
+            List<Task<JobResult>> subResults = new List<Task<JobResult>>();
+
+            foreach (var job in jobs)
+            {
+                subResults.Add(Task.Run(() =>
+                {
+                    return new JobResult();
+                }));
+            }
+            throw new NotImplementedException();
         }
 
         public static List<Task<JobResult>> ExecuteSSHJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
@@ -87,7 +102,7 @@ namespace ReGen.CLI
                             {
                                 CellReference = "A1",
                                 DataType = CellValues.String,
-                                CellValue = new CellValue("Job Name")
+                                CellValue = new CellValue("Job Name"),
                             },
                             new Cell()
                             {
