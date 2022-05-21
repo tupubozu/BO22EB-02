@@ -82,7 +82,7 @@ namespace ReGen.CLI
                 {
                     try
                     {
-                        var client = new VCenterClient(new Uri($"https://{target.Host}:{job.Port}/"), key);
+                        var client = new VCenterClient(new Uri($"https://{target.Host}:{job.Port}/"), Convert.ToBase64String(Encoding.ASCII.GetBytes(key)));
                         client.CreateSession();
                         var vm_arr = client.ListVm();
 
