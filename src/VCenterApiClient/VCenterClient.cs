@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using HttpApiClient;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace VCenterApiClient
 {
@@ -25,6 +26,7 @@ namespace VCenterApiClient
         
         private protected sealed class SessionParameters
         {
+            [JsonProperty("password")]
             public string Password { get; set; }
         }
 
@@ -32,7 +34,7 @@ namespace VCenterApiClient
 
         public async Task CreateSessionAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/session"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "/api/session"))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", SessionKey);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -45,7 +47,7 @@ namespace VCenterApiClient
 
         public async Task DeleteSessionAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, "api/session"))
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, "/api/session"))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", SessionKey);
                 await RequestAsync(request);
@@ -55,7 +57,7 @@ namespace VCenterApiClient
         public VMSummmary[] ListVm() => ListVmAsync().GetAwaiter().GetResult();
         public async Task<VMSummmary[]> ListVmAsync()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, "api/vcenter/vm"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/vcenter/vm"))
             {
                 request.Headers.Add("Accept", "application/json");
                 return await RequestObjectAsync<VMSummmary[]>(request);
