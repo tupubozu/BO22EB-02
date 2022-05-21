@@ -15,6 +15,8 @@ namespace HttpApiClient
         private JsonSerializer serializer;
         protected internal string ApiKey;
 
+        protected internal Uri BaseAddress { get => client.BaseAddress; }
+
         public ApiClient(Uri baseAddress) : this (baseAddress: baseAddress, apiKey: null)
         {
         }
