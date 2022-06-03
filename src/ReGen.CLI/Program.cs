@@ -127,9 +127,9 @@ namespace ReGen.CLI
                 .WriteTo.Console(Serilog.Events.LogEventLevel.Verbose)
 #else
                 .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Warning)
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Error)
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Fatal)
+                //.WriteTo.Console(Serilog.Events.LogEventLevel.Warning)
+                //.WriteTo.Console(Serilog.Events.LogEventLevel.Error)
+                //.WriteTo.Console(Serilog.Events.LogEventLevel.Fatal)
 #endif
                 .Enrich.FromLogContext()
                 .MinimumLevel.Debug();

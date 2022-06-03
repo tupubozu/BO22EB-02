@@ -43,7 +43,7 @@ namespace ReGen.CLI
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.Custom))
                 {
                     var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.Custom);
-                    var subResults = ExecuteSSHJob(config, target, jobs);
+                    List<Task<JobResult>> subResults = ExecuteSSHJob(config, target, jobs);
                     results.AddRange(subResults);
                 }
 
@@ -62,12 +62,39 @@ namespace ReGen.CLI
                 if (categories.Contains(ProgramConfiguration.Target.Job.JobCategory.vCenter))
                 {
                     var jobs = target.Jobs.Where(item => item.Category == ProgramConfiguration.Target.Job.JobCategory.vCenter);
-                    var subResults = ExecuteVCenterJob(config, target, jobs);
+                    List<Task<JobResult>> subResults = ExecuteVCenterJob(config, target, jobs);
                     results.AddRange(subResults);
                 }
             }
 
             return results.ToArray();
+        }
+        public static List<Task<JobResult>> ExecuteVCenterJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
+        {
+            foreach (var job in jobs)
+            {
+                var keys =
+                    from key in config.Keys
+                    where job.Keys.Contains(key.ID)
+                    select key.Value;
+
+                foreach (var key in keys)
+                {
+                    try
+                    {
+                        var client = new VCenterClient(new Uri($"https://{target.Host}:{job.Port}/"), Convert.ToBase64String(Encoding.ASCII.GetBytes(key)));
+                        client.CreateSession();
+                        var vm_arr = client.ListVm();
+
+                        break;
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
+            }
+            throw new NotImplementedException();
         }
 
         public static List<Task<JobResult>> ExecuteSSHJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
@@ -91,24 +118,24 @@ namespace ReGen.CLI
             List<Row> rows = new List<Row>();
             Row headerRow = new Row(new Cell[]
                 {
-                    new Cell()
-                    {
-                        CellReference = "A1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Job Name")
-                    },
-                    new Cell()
-                    {
-                        CellReference = "B1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Return Value")
-                    },
-                    new Cell()
-                    {
-                        CellReference = "C1",
-                        DataType = CellValues.String,
-                        CellValue = new CellValue("Execution Result")
-                    }
+                            new Cell()
+                            {
+                                CellReference = "A1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Job Name")
+                            },
+                            new Cell()
+                            {
+                               CellReference = "B1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Return Value")
+                            },
+                            new Cell()
+                            {
+                                CellReference = "C1",
+                                DataType = CellValues.String,
+                                CellValue = new CellValue("Execution Result")
+                            }
                 });
 
             rows.Add(headerRow);
@@ -207,34 +234,6 @@ namespace ReGen.CLI
             JobResult result = new JobResult() { Target = target.Host, JobName = job.Name, Worksheet = new Worksheet(resultData) };
 
             return result;
-        }
-
-        public static List<Task<JobResult>> ExecuteVCenterJob(ProgramConfiguration config, ProgramConfiguration.Target target, IEnumerable<ProgramConfiguration.Target.Job> jobs)
-        {
-            foreach (var job in jobs)
-            {
-                var keys =
-                    from key in config.Keys
-                    where job.Keys.Contains(key.ID)
-                    select key.Value;
-
-                foreach (var key in keys)
-                {
-                    try
-                    {
-                        var client = new VCenterClient(new Uri($"https://{target.Host}:{job.Port}/"), key);
-                        client.CreateSession();
-                        var vm_arr = client.ListVm();
-
-                        break;
-                    }
-                    catch (Exception)
-                    {
-                       
-                    }
-                }
-            }   
-            throw new NotImplementedException();
         }
     }
 }
